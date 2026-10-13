@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Собери слово - перетаскивание шаров с эффектом следования</title>
+    <style>
+        * {
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(145deg, #fde8cd 0%, #ffcf9a 100%);
+            font-family: 'Calibri', 'Segoe UI', 'Comic Neue', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            touch-action: pan-x pan-y; /* разрешаем прокрутку, но перетаскивание работает */
+        }
+
+        .game-wrapper {
+            max-width: 800px;
+            width: 100%;
+            background: rgba(255, 250, 240, 0.85);
+            border-radius: 80px;
+            padding: 25px 20px 35px;
+            box-shadow: 0 25px 40px rgba(0, 0, 0, 0.2), inset 0 1px 4px rgba(255,255,255,0.8);
+            backdrop-filter: blur(2px);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.4rem;
+            margin: 0 0 10px 0;
+            color: #ff6f3c;
+            text-shadow: 3px 3px 0 #ffd966;
+        }
+
+        .counter-box {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: #ffedd5;
+            display: inline-block;
+            width: auto;
+            margin: 0 auto 20px;
+            padding: 8px 24px;
+            border-radius: 60px;
+            box-shadow: inset 0 1px 3px #0001, 0 5px 10px rgba(0,0,0,0.1);
+            color: #c25d2e;
+        }
+
+        .balls-area {
+            background: rgba(251, 223, 178, 0.5);
+            border-radius: 70px;
+            padding: 25px 15px;
+            margin: 15px 0;
+            min-height: 220px;
+        }
+
+        .balls-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 18px;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Стили шаров */
+        .ball {
+            width: 85px;
+            height: 85px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 32% 28%, #ffb347, #ff7e05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: 800;
+            color: white;
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+            box-shadow: 0 12px 15px -5px rgba(0,0,0,0.3), inset 0 -3px 0 rgba(0,0,0,0.1), inset 0 2px 5px rgba(255,255,255,0.7);
+            cursor: grab;
+            transition: transform 0.05s, box-shadow 0.1s, opacity 0.2s;
+            touch-action: none;
+        }
+
+        .ball:active {
+            cursor: grabbing;
+        }
+
+        /* Эффект "исходный шар при перетаскивании" */
+        .ball.drag-source-hidden {
+            opacity: 0.3;
+            transform: scale(0.95);
+            transition: opacity 0.15s, transform 0.15s;
+            cursor: grabbing;
+        }
+
+        /* Подсветка цели при наведении перетаскиваемого шара */
+        .ball.drag-target-highlight {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 4px gold, 0 18px 22px -6px rgba(0,0,0,0.3);
+            background: radial-gradient(circle at 32% 28%, #ffb86b, #ff941a);
+            transition: transform 0.07s, box-shadow 0.07s;
+        }
+
+        /* Золотой стиль для победы */
+        .ball.gold {
+            background: radial-gradient(circle at 32% 28%, #f9d976, #f39f1a);
+            box-shadow: 0 0 12px gold, 0 10px 18px rgba(0,0,0,0.2);
+            text-shadow: 0 0 5px #ffd966;
+            cursor: default;
+        }
+
+        .ball.gold:active {
+            cursor: default;
+        }
+
+        /* Плавающий клон шара (следует за курсором) */
+        .ball-drag-clone {
+            position: fixed;
+            z-index: 9999;
+            width: 85px;
+            height: 85px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 32% 28%, #ffb347, #ff7e05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: 800;
+            color: white;
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+            box-shadow: 0 18px 25px -8px black, inset 0 2px 6px rgba(255,255,200,0.9);
+            pointer-events: none;
+            transform: rotate(4deg) scale(1.05);
+            transition: none;
+            will-change: left, top;
+        }
+
+        .message-win {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2b7a2b;
+            background: #e9ffdb;
+            display: inline-block;
+            padding: 8px 35px;
+            border-radius: 50px;
+            margin: 15px auto 10px;
+            box-shadow: 0 5px 0 #a5d6a5;
+        }
+
+        .next-btn {
+            display: block;
+            width: 80%;
+            max-width: 300px;
+            margin: 15px auto 5px;
+            padding: 16px 20px;
+            font-size: 1.9rem;
+            font-weight: bold;
+            font-family: 'Calibri', sans-serif;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 60px;
+            box-shadow: 0 8px 0 #2e6b2f;
+            cursor: pointer;
+            transition: 0.07s linear;
+            text-align: center;
+        }
+
+        .next-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 4px 0 #2e6b2f;
+        }
+
+        .next-btn.disabled-btn, .next-btn:disabled {
+            background: #bdbdbd;
+            box-shadow: 0 8px 0 #7e7e7e;
+            cursor: not-allowed;
+            transform: none;
+            opacity: 0.7;
+        }
+
+        .end-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.2s;
+        }
+
+        .end-screen.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .end-card {
+            background: #fff5e6;
+            border-radius: 70px;
+            padding: 30px 35px;
+            text-align: center;
+            width: 85%;
+            max-width: 400px;
+            box-shadow: 0 30px 35px rgba(0,0,0,0.3);
+            border: 4px solid gold;
+        }
+
+        .end-card h2 {
+            font-size: 3rem;
+            margin: 0 0 20px;
+            color: #ff8c42;
+        }
+
+        .restart-btn {
+            background: #ff914d;
+            font-size: 2rem;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 50px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #b64926;
+            transition: 0.05s linear;
+        }
+
+        .restart-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 3px 0 #b64926;
+        }
+
+        .feedback-area {
+            text-align: center;
+            min-height: 85px;
+        }
+
+        @media (max-width: 550px) {
+            .ball, .ball-drag-clone {
+                width: 68px;
+                height: 68px;
+                font-size: 2.3rem;
+            }
+            .game-wrapper {
+                padding: 15px 12px 25px;
+            }
+            h1 {
+                font-size: 1.8rem;
+            }
+            .next-btn {
+                font-size: 1.5rem;
+                padding: 12px 15px;
+            }
+            .message-win {
+                font-size: 1.6rem;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .ball, .ball-drag-clone {
+                width: 60px;
+                height: 60px;
+                font-size: 2rem;
+            }
+            .balls-container {
+                gap: 12px;
+            }
+        }
+
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-wrapper" id="gameWrapper">
+    <h1>🎈 СОБЕРИ СЛОВО 🎈</h1>
+    <div style="display: flex; justify-content: center;">
+        <div class="counter-box" id="counterDisplay">Слово 1 / 27</div>
+    </div>
+
+    <div class="balls-area">
+        <div class="balls-container" id="ballsContainer"></div>
+    </div>
+
+    <div class="feedback-area" id="feedbackArea"></div>
+
+    <button class="next-btn" id="nextButton" disabled>➡ ДАЛЬШЕ ⬅</button>
+</div>
+
+<div class="end-screen" id="endScreen">
+    <div class="end-card">
+        <h2>🏆 ПОБЕДА! 🏆</h2>
+        <p>Ты собрал все слова!<br>Супер!</p>
+        <button class="restart-btn" id="restartGameBtn">✨ НАЧАТЬ ЗАНОВО ✨</button>
+    </div>
+</div>
+
+<canvas id="confetti-canvas" style="display: none;"></canvas>
+
+<script>
+    // ---------- СЛОВА ИГРЫ ----------
+    const WORDS = [
+        "каша", "кино", "коза", "кофе", "сова", "нора", "няня", "нога", "небо", "ноты",
+        "лиса", "лапа", "лыжи", "луна", "рука", "рама", "роза", "рыба", "рана", "вода",
+        "пила", "пена", "паук", "мука", "муха", "бусы", "баня"
+    ];
+    const TOTAL_WORDS = WORDS.length;
+
+    let currentWordIndex = 0;
+    let currentWord = "";
+    let correctLetters = [];
+    let currentLetters = [];
+    let isWin = false;
+    let animationId = null;
+    let confettiActive = false;
+    let confettiCanvas = document.getElementById('confetti-canvas');
+    let ctx = null;
+    let particles = [];
+
+    // Переменные для drag & drop с визуальным перемещением
+    let dragActive = false;
+    let dragStartIndex = -1;
+    let dragClone = null;          // элемент-клон, следующий за курсором
+    let sourceBall = null;         // исходный DOM шар (который перетаскиваем)
+    let currentHighlightedTarget = null;  // текущий подсвеченный шар-цель
+
+    const ballsContainer = document.getElementById('ballsContainer');
+    const counterDisplay = document.getElementById('counterDisplay');
+    const nextButton = document.getElementById('nextButton');
+    const feedbackArea = document.getElementById('feedbackArea');
+    const endScreen = document.getElementById('endScreen');
+    const restartBtn = document.getElementById('restartGameBtn');
+
+    // ---------- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ----------
+    function shuffleArray(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function getShuffledNotOriginal(originalArr) {
+        let shuffled = [...originalArr];
+        do {
+            shuffled = shuffleArray([...originalArr]);
+        } while (shuffled.join('') === originalArr.join(''));
+        return shuffled;
+    }
+
+    function loadWordByIndex() {
+        currentWord = WORDS[currentWordIndex];
+        correctLetters = currentWord.split('');
+        currentLetters = getShuffledNotOriginal(correctLetters);
+        isWin = false;
+        feedbackArea.innerHTML = '';
+        nextButton.disabled = true;
+        nextButton.classList.add('disabled-btn');
+        stopConfetti();
+    }
+
+    function updateCounter() {
+        counterDisplay.innerText = `Слово ${currentWordIndex + 1} / ${TOTAL_WORDS}`;
+    }
+
+    function checkWinCondition() {
+        if (isWin) return true;
+        const isMatch = currentLetters.join('') === correctLetters.join('');
+        if (isMatch) {
+            isWin = true;
+            feedbackArea.innerHTML = '<div class="message-win">🎉 МОЛОДЕЦ! 🎉</div>';
+            nextButton.disabled = false;
+            nextButton.classList.remove('disabled-btn');
+            renderBalls(true);
+            startConfetti();
+            return true;
+        }
+        return false;
+    }
+
+    function renderBalls(forceGold = false) {
+        const showGold = forceGold || isWin;
+        ballsContainer.innerHTML = '';
+        for (let i = 0; i < currentLetters.length; i++) {
+            const ball = document.createElement('div');
+            ball.className = 'ball';
+            if (showGold) ball.classList.add('gold');
+            ball.textContent = currentLetters[i];
+            ball.setAttribute('data-index', i);
+            ballsContainer.appendChild(ball);
+        }
+        if (isWin) {
+            document.querySelectorAll('.ball').forEach(b => {
+                b.style.cursor = 'default';
+                b.style.touchAction = 'auto';
+            });
+        } else {
+            document.querySelectorAll('.ball').forEach(b => {
+                b.style.cursor = 'grab';
+                b.style.touchAction = 'none';
+            });
+        }
+    }
+
+    function swapLetters(indexA, indexB) {
+        if (indexA === indexB) return false;
+        if (isWin) return false;
+        [currentLetters[indexA], currentLetters[indexB]] = [currentLetters[indexB], currentLetters[indexA]];
+        renderBalls();          // полная перерисовка после обмена
+        checkWinCondition();
+        return true;
+    }
+
+    // ---------- DRAG & DROP С ФИЗИЧЕСКИМ ПЕРЕМЕЩЕНИЕМ (клон следует за курсором) ----------
+    function createDragClone(originalBall, clientX, clientY) {
+        const rect = originalBall.getBoundingClientRect();
+        const clone = document.createElement('div');
+        clone.className = 'ball-drag-clone';
+        clone.textContent = originalBall.textContent;
+        clone.style.width = rect.width + 'px';
+        clone.style.height = rect.height + 'px';
+        clone.style.left = (clientX - rect.width / 2) + 'px';
+        clone.style.top = (clientY - rect.height / 2) + 'px';
+        clone.style.fontSize = window.getComputedStyle(originalBall).fontSize;
+        document.body.appendChild(clone);
+        return clone;
+    }
+
+    function updateClonePosition(clone, clientX, clientY, ballWidth, ballHeight) {
+        if (!clone) return;
+        clone.style.left = (clientX - ballWidth / 2) + 'px';
+        clone.style.top = (clientY - ballHeight / 2) + 'px';
+    }
+
+    function removeDragClone() {
+        if (dragClone) {
+            dragClone.remove();
+            dragClone = null;
+        }
+    }
+
+    function clearHighlightTarget() {
+        if (currentHighlightedTarget) {
+            currentHighlightedTarget.classList.remove('drag-target-highlight');
+            currentHighlightedTarget = null;
+        }
+    }
+
+    function getTargetBallUnderPointer(clientX, clientY) {
+        const elemUnderPointer = document.elementsFromPoint(clientX, clientY);
+        for (let el of elemUnderPointer) {
+            if (el.classList && el.classList.contains('ball') && !el.classList.contains('gold') && el !== sourceBall) {
+                return el;
+            }
+        }
+        return null;
+    }
+
+    function onPointerMove(e) {
+        if (!dragActive || !dragClone) return;
+        e.preventDefault();
+        const clientX = e.clientX;
+        const clientY = e.clientY;
+        const ballWidth = dragClone.offsetWidth;
+        const ballHeight = dragClone.offsetHeight;
+        updateClonePosition(dragClone, clientX, clientY, ballWidth, ballHeight);
+        
+        // Подсветка шара-цели
+        const targetBall = getTargetBallUnderPointer(clientX, clientY);
+        if (targetBall !== currentHighlightedTarget) {
+            clearHighlightTarget();
+            if (targetBall) {
+                targetBall.classList.add('drag-target-highlight');
+                currentHighlightedTarget = targetBall;
+            }
+        }
+    }
+
+    function onPointerUp(e) {
+        if (!dragActive) {
+            cleanupDrag();
+            return;
+        }
+        
+        const clientX = e.clientX;
+        const clientY = e.clientY;
+        let targetBall = getTargetBallUnderPointer(clientX, clientY);
+        
+        if (targetBall && dragStartIndex !== -1 && !isWin) {
+            const targetIndex = parseInt(targetBall.getAttribute('data-index'), 10);
+            if (!isNaN(targetIndex) && targetIndex !== dragStartIndex) {
+                swapLetters(dragStartIndex, targetIndex);
+            }
+        }
+        
+        cleanupDrag();
+    }
+    
+    function cleanupDrag() {
+        if (sourceBall) {
+            sourceBall.classList.remove('drag-source-hidden');
+            sourceBall = null;
+        }
+        removeDragClone();
+        clearHighlightTarget();
+        dragActive = false;
+        dragStartIndex = -1;
+        window.removeEventListener('pointermove', onPointerMove);
+        window.removeEventListener('pointerup', onPointerUp);
+        document.body.style.overflow = '';
+        // Восстанавливаем возможность выделения и прокрутки
+        document.body.style.touchAction = '';
+    }
+
+    function startDrag(e, ballElement, index) {
+        if (isWin) return;
+        e.preventDefault();
+        if (dragActive) cleanupDrag();
+        dragStartIndex = index;
+        sourceBall = ballElement;
+        sourceBall.classList.add('drag-source-hidden');
+        
+        // Создаём клон, следующий за курсором
+        const clientX = e.clientX;
+        const clientY = e.clientY;
+        dragClone = createDragClone(sourceBall, clientX, clientY);
+        
+        dragActive = true;
+        window.addEventListener('pointermove', onPointerMove);
+        window.addEventListener('pointerup', onPointerUp);
+        document.body.style.overflow = 'hidden';   // предотвращаем прокрутку страницы во время драга
+        document.body.style.touchAction = 'none';
+    }
+
+    function initDragListeners() {
+        ballsContainer.addEventListener('pointerdown', (e) => {
+            const ball = e.target.closest('.ball');
+            if (!ball) return;
+            if (isWin || ball.classList.contains('gold')) {
+                e.preventDefault();
+                return;
+            }
+            const index = parseInt(ball.getAttribute('data-index'), 10);
+            if (!isNaN(index)) {
+                e.preventDefault();
+                startDrag(e, ball, index);
+            }
+        });
+        // Отключаем контекстное меню на шарах
+        ballsContainer.addEventListener('contextmenu', (e) => e.preventDefault());
+    }
+
+    // ---------- КОНФЕТТИ (анимация) ----------
+    function startConfetti() {
+        if (confettiActive) stopConfetti();
+        confettiCanvas.style.display = 'block';
+        confettiCanvas.width = window.innerWidth;
+        confettiCanvas.height = window.innerHeight;
+        ctx = confettiCanvas.getContext('2d');
+        particles = [];
+        const colors = ['#ff595e', '#ffca3a', '#8ac926', '#1982c4', '#6a4e9b', '#ff9f1c'];
+        for (let i = 0; i < 180; i++) {
+            particles.push({
+                x: Math.random() * confettiCanvas.width,
+                y: Math.random() * confettiCanvas.height - confettiCanvas.height,
+                size: Math.random() * 8 + 4,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                speedX: (Math.random() - 0.5) * 3,
+                speedY: Math.random() * 5 + 4,
+                rotation: Math.random() * 360,
+                rotSpeed: (Math.random() - 0.5) * 4,
+                gravity: 0.2,
+                alpha: 1
+            });
+        }
+        confettiActive = true;
+        function animateConfetti() {
+            if (!confettiActive) return;
+            ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+            let stillAlive = false;
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+                p.x += p.speedX;
+                p.y += p.speedY;
+                p.speedY += p.gravity;
+                p.rotation += p.rotSpeed;
+                if (p.y < confettiCanvas.height + 50 && p.y > -50) stillAlive = true;
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.rotation * Math.PI / 180);
+                ctx.globalAlpha = p.alpha;
+                ctx.fillStyle = p.color;
+                ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size/1.5);
+                ctx.restore();
+                if (p.y > confettiCanvas.height + 80 || p.x < -80 || p.x > confettiCanvas.width + 80) {
+                    particles[i] = {
+                        ...p,
+                        x: Math.random() * confettiCanvas.width,
+                        y: -20,
+                        speedY: Math.random() * 4 + 3,
+                        speedX: (Math.random() - 0.5) * 2.5,
+                    };
+                }
+            }
+            if (stillAlive || particles.length) {
+                animationId = requestAnimationFrame(animateConfetti);
+            } else {
+                cancelAnimationFrame(animationId);
+                confettiActive = false;
+                confettiCanvas.style.display = 'none';
+            }
+        }
+        animationId = requestAnimationFrame(animateConfetti);
+        setTimeout(() => {
+            if (confettiActive) stopConfetti();
+        }, 3800);
+    }
+
+    function stopConfetti() {
+        if (animationId) {
+            cancelAnimationFrame(animationId);
+            animationId = null;
+        }
+        confettiActive = false;
+        if (confettiCanvas) {
+            confettiCanvas.style.display = 'none';
+            if (ctx) ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+        }
+    }
+
+    // ---------- УПРАВЛЕНИЕ ИГРОЙ ----------
+    function nextWord() {
+        if (!isWin) return;
+        if (currentWordIndex + 1 >= TOTAL_WORDS) {
+            showEndGameScreen();
+            return;
+        }
+        currentWordIndex++;
+        loadWordByIndex();
+        updateCounter();
+        renderBalls();
+        isWin = false;
+        stopConfetti();
+        nextButton.disabled = true;
+        nextButton.classList.add('disabled-btn');
+        feedbackArea.innerHTML = '';
+    }
+
+    function showEndGameScreen() {
+        stopConfetti();
+        endScreen.classList.add('active');
+        isWin = false;
+    }
+
+    function restartGame() {
+        endScreen.classList.remove('active');
+        currentWordIndex = 0;
+        loadWordByIndex();
+        updateCounter();
+        renderBalls();
+        isWin = false;
+        stopConfetti();
+        feedbackArea.innerHTML = '';
+        nextButton.disabled = true;
+        nextButton.classList.add('disabled-btn');
+        cleanupDrag(); // на всякий случай сбросить дрянь
+    }
+
+    function initGame() {
+        currentWordIndex = 0;
+        loadWordByIndex();
+        updateCounter();
+        renderBalls();
+        isWin = false;
+        stopConfetti();
+        feedbackArea.innerHTML = '';
+        nextButton.disabled = true;
+        nextButton.classList.add('disabled-btn');
+        initDragListeners();
+        nextButton.addEventListener('click', nextWord);
+        restartBtn.addEventListener('click', restartGame);
+        window.addEventListener('resize', () => {
+            if (confettiActive) {
+                stopConfetti();
+                startConfetti();
+            }
+        });
+    }
+
+    window.addEventListener('DOMContentLoaded', initGame);
+</script>
+</body>
+</html>

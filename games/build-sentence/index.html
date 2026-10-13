@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Собери предложение — предлоги отдельно</title>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(145deg, #b8e1fc 0%, #d9f0ff 100%);
+            font-family: 'Calibri', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background-color: rgba(255, 248, 225, 0.9);
+            border-radius: 80px;
+            box-shadow: 0 25px 40px rgba(0, 0, 0, 0.2), inset 0 1px 2px rgba(255,255,255,0.6);
+            padding: 30px 25px 35px 25px;
+            width: 100%;
+            max-width: 1200px;
+            transition: all 0.2s ease;
+        }
+
+        /* --- МЕНЮ (главный экран) --- */
+        .menu-screen {
+            text-align: center;
+        }
+
+        .game-title {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #2d5f7e;
+            text-shadow: 4px 4px 0 #ffd966;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(80px, 110px));
+            gap: 20px 18px;
+            justify-content: center;
+            margin: 30px auto;
+            max-width: 650px;
+        }
+
+        .level-btn {
+            background: radial-gradient(circle at 30% 20%, #ffcc80, #ff9800);
+            border: none;
+            font-size: 2rem;
+            font-weight: bold;
+            font-family: 'Calibri', sans-serif;
+            color: white;
+            text-shadow: 2px 2px 0 #b45f06;
+            padding: 14px 0;
+            border-radius: 60px;
+            cursor: pointer;
+            box-shadow: 0 8px 0 #b45f06, 0 3px 12px rgba(0,0,0,0.2);
+            transition: 0.05s linear;
+            text-align: center;
+        }
+
+        .level-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 3px 0 #b45f06;
+        }
+
+        /* экран игры */
+        .game-screen {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.97);}
+            to { opacity: 1; transform: scale(1);}
+        }
+
+        .picture-area {
+            text-align: center;
+            margin-bottom: 25px;
+            background: #fef3d6;
+            padding: 15px;
+            border-radius: 60px;
+            box-shadow: inset 0 0 0 5px white, 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .game-img {
+            max-width: 90%;
+            max-height: 250px;
+            border-radius: 45px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            background: #fff2df;
+            object-fit: contain;
+        }
+
+        .words-wrapper {
+            background: #fff5e8;
+            border-radius: 60px;
+            padding: 20px 15px;
+            margin: 20px 0;
+            box-shadow: inset 0 1px 5px #edd5b0, 0 10px 20px rgba(0,0,0,0.05);
+        }
+
+        .word-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 14px;
+            min-height: 100px;
+        }
+
+        /* скругленные прямоугольники для слов */
+        .word {
+            background: linear-gradient(145deg, #fff0d4, #ffe0b5);
+            border-radius: 28px;
+            padding: 10px 22px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            font-family: 'Calibri', sans-serif;
+            color: #3b2a1f;
+            box-shadow: 0 5px 0 #c29a6b;
+            cursor: grab;
+            transition: 0.05s linear;
+            text-align: center;
+            display: inline-block;
+            border: 1px solid #ffcf8a;
+            letter-spacing: 1px;
+        }
+
+        .word:active {
+            cursor: grabbing;
+        }
+
+        /* мерцание при правильном порядке */
+        .blink-correct {
+            animation: gentleBlink 0.4s ease-in-out 3, glowPulse 0.9s infinite;
+            background: #c8e6b5;
+            border-color: #5a9e3e;
+            box-shadow: 0 0 12px #8bc34a;
+        }
+
+        @keyframes gentleBlink {
+            0% { opacity: 1; background: #ffe0b5; }
+            50% { opacity: 0.7; background: #c8e6b5; transform: scale(0.98);}
+            100% { opacity: 1; background: #c8e6b5; }
+        }
+
+        @keyframes glowPulse {
+            0% { box-shadow: 0 0 0 0 #b3e07c; border-color: #7cb342;}
+            70% { box-shadow: 0 0 0 8px rgba(139,195,74,0.3); border-color: #8bc34a;}
+            100% { box-shadow: 0 0 0 0 #b3e07c;}
+        }
+
+        .action-panel {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .action-btn {
+            background: #5d9b4b;
+            border: none;
+            font-family: 'Calibri', sans-serif;
+            font-size: 1.5rem;
+            font-weight: bold;
+            padding: 10px 28px;
+            border-radius: 50px;
+            color: white;
+            text-shadow: 1px 1px 0 #2c5a1f;
+            box-shadow: 0 6px 0 #2a6b1a;
+            cursor: pointer;
+            transition: 0.07s linear;
+            letter-spacing: 1px;
+        }
+
+        .action-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #2a6b1a;
+        }
+
+        .back-btn {
+            background: #f3a683;
+            box-shadow: 0 6px 0 #b95f3a;
+            text-shadow: 1px 1px 0 #9b4120;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .hint-text {
+            text-align: center;
+            font-size: 1.3rem;
+            background: #ffe1b3;
+            display: inline-block;
+            width: auto;
+            margin: 10px auto 0;
+            padding: 6px 22px;
+            border-radius: 40px;
+            color: #a7581c;
+            font-weight: bold;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1.2rem;
+            color: #5a3a1f;
+        }
+
+        @media (max-width: 650px) {
+            .buttons-grid {
+                grid-template-columns: repeat(5, minmax(65px, 85px));
+                gap: 12px;
+            }
+            .level-btn {
+                font-size: 1.6rem;
+                padding: 10px 0;
+            }
+            .word {
+                font-size: 1.2rem;
+                padding: 6px 14px;
+                border-radius: 24px;
+            }
+            .action-btn {
+                font-size: 1.2rem;
+                padding: 8px 20px;
+            }
+            .game-title {
+                font-size: 2.2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .word {
+                font-size: 1rem;
+                padding: 5px 12px;
+                border-radius: 20px;
+            }
+        }
+
+        .word-ghost {
+            opacity: 0.5;
+            background: #d9ae6c;
+        }
+        .sortable-drag {
+            cursor: grabbing;
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container" id="gameContainer">
+    <!-- МЕНЮ ВЫБОРА -->
+    <div id="menuScreen" class="menu-screen">
+        <div class="game-title">📖 СОБЕРИ ПРЕДЛОЖЕНИЕ 🧸</div>
+        <div class="hint-text" style="background:#ffecb3;">Нажми на любую цифру — начнём игру!</div>
+        <div class="buttons-grid" id="buttonsGrid"></div>
+        <footer>✨ Перетаскивай слова пальчиком ✨<br>📌 Предлоги — отдельные карточки</footer>
+    </div>
+
+    <!-- ЭКРАН ИГРЫ -->
+    <div id="gameScreen" class="game-screen">
+        <div class="picture-area">
+            <img id="gameImage" class="game-img" src="" alt="Картинка">
+        </div>
+        <div class="words-wrapper">
+            <div class="word-list" id="wordList"></div>
+            <div class="hint-text" style="margin-top: 15px;">💡 Подсказка: слово с большой буквы — первое! Предлоги пишутся отдельно.</div>
+        </div>
+        <div class="action-panel">
+            <button id="shuffleBtn" class="action-btn">🔄 Перемешать</button>
+            <button id="backToMenuBtn" class="action-btn back-btn">🏠 В начало</button>
+        </div>
+        <div id="winBackBtnContainer" style="text-align: center; margin-top: 15px;">
+            <button id="winBackBtn" class="action-btn back-btn hidden">✨ Собрано! В начало ✨</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---------- ПРАВИЛЬНЫЕ ПРЕДЛОЖЕНИЯ (предлоги отдельно, первое слово с заглавной) ----------
+    const sentencesData = {
+        1: {
+            correctWords: ["У", "девочки", "красивый", "попугай"],
+            image: "images/1.png"
+        },
+        2: {
+            correctWords: ["Мальчик", "идёт", "в", "школу"],
+            image: "images/2.png"
+        },
+        3: {
+            correctWords: ["Бабушка", "с", "внуком", "пьют", "чай"],
+            image: "images/3.png"
+        },
+        4: {
+            correctWords: ["Миша", "кидает", "Шарику", "мячик"],
+            image: "images/4.png"
+        },
+        5: {
+            correctWords: ["Мальчик", "Коля", "любит", "яблоки"],
+            image: "images/5.png"
+        },
+        6: {
+            correctWords: ["Мама", "нарядила", "свою", "дочку"],
+            image: "images/6.png"
+        },
+        7: {
+            correctWords: ["Белка", "собирает", "запасы", "на", "зиму"],
+            image: "images/7.png"
+        },
+        8: {
+            correctWords: ["Саша", "поливает", "маки"],
+            image: "images/8.png"
+        },
+        9: {
+            correctWords: ["Юля", "рисует", "красивый", "домик"],
+            image: "images/9.png"
+        },
+        10: {
+            correctWords: ["Дети", "слепили", "большого", "снеговика"],
+            image: "images/10.png"
+        }
+    };
+
+    let currentNumber = null;
+    let currentCorrectWords = [];
+    let currentSortableInstance = null;
+    const wordListContainer = document.getElementById('wordList');
+    const menuScreen = document.getElementById('menuScreen');
+    const gameScreen = document.getElementById('gameScreen');
+    const gameImage = document.getElementById('gameImage');
+    const shuffleBtn = document.getElementById('shuffleBtn');
+    const backToMenuBtn = document.getElementById('backToMenuBtn');
+    const winBackBtn = document.getElementById('winBackBtn');
+    const buttonsGrid = document.getElementById('buttonsGrid');
+
+    // Перемешивание массива
+    function shuffleArray(arr) {
+        const array = [...arr];
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    // Уничтожить старый Sortable
+    function destroySortable() {
+        if (currentSortableInstance) {
+            currentSortableInstance.destroy();
+            currentSortableInstance = null;
+        }
+    }
+
+    // Отрисовать список слов
+    function renderWordList(wordsArray) {
+        if (!wordListContainer) return;
+        wordListContainer.innerHTML = '';
+        wordsArray.forEach(word => {
+            const wordDiv = document.createElement('div');
+            wordDiv.className = 'word';
+            wordDiv.textContent = word;
+            wordDiv.setAttribute('data-word', word);
+            wordListContainer.appendChild(wordDiv);
+        });
+    }
+
+    // Проверка правильности порядка (сравнение с эталоном)
+    function checkOrderAndWin() {
+        if (!currentCorrectWords) return false;
+        const wordDivs = document.querySelectorAll('#wordList .word');
+        if (wordDivs.length !== currentCorrectWords.length) return false;
+        
+        let isCorrect = true;
+        for (let i = 0; i < wordDivs.length; i++) {
+            if (wordDivs[i].textContent.trim() !== currentCorrectWords[i]) {
+                isCorrect = false;
+                break;
+            }
+        }
+        
+        const wordListParent = document.getElementById('wordList');
+        if (isCorrect) {
+            wordListParent.classList.add('blink-correct');
+            winBackBtn.classList.remove('hidden');
+        } else {
+            wordListParent.classList.remove('blink-correct');
+            winBackBtn.classList.add('hidden');
+        }
+        return isCorrect;
+    }
+
+    // Инициализация перетаскивания
+    function initSortable() {
+        destroySortable();
+        if (!wordListContainer) return;
+        currentSortableInstance = new Sortable(wordListContainer, {
+            animation: 280,
+            ghostClass: 'word-ghost',
+            onEnd: () => checkOrderAndWin(),
+            touchStartThreshold: 2,
+        });
+    }
+
+    // Перемешать слова (но сохранить эталон)
+    function resetAndShuffle() {
+        if (!currentCorrectWords) return;
+        const shuffled = shuffleArray(currentCorrectWords);
+        renderWordList(shuffled);
+        initSortable();
+        const wordListParent = document.getElementById('wordList');
+        if (wordListParent) wordListParent.classList.remove('blink-correct');
+        winBackBtn.classList.add('hidden');
+    }
+
+    // Загрузить конкретное задание
+    function loadGame(levelNumber) {
+        const data = sentencesData[levelNumber];
+        if (!data) return;
+        
+        currentNumber = levelNumber;
+        currentCorrectWords = [...data.correctWords]; // копия эталона
+        
+        gameImage.src = data.image;
+        gameImage.alt = `Картинка ${levelNumber}`;
+        
+        // Стартовый перемешанный порядок
+        const shuffledStart = shuffleArray(currentCorrectWords);
+        renderWordList(shuffledStart);
+        initSortable();
+        
+        const wordListParent = document.getElementById('wordList');
+        if (wordListParent) wordListParent.classList.remove('blink-correct');
+        winBackBtn.classList.add('hidden');
+        
+        // Переключение экранов
+        menuScreen.style.display = 'none';
+        gameScreen.style.display = 'block';
+    }
+
+    // Вернуться в главное меню
+    function backToMenu() {
+        destroySortable();
+        currentNumber = null;
+        currentCorrectWords = [];
+        gameScreen.style.display = 'none';
+        menuScreen.style.display = 'block';
+        if (wordListContainer) wordListContainer.innerHTML = '';
+        const wordListParent = document.getElementById('wordList');
+        if (wordListParent) wordListParent.classList.remove('blink-correct');
+        winBackBtn.classList.add('hidden');
+    }
+
+    // Обработчики кнопок
+    shuffleBtn.addEventListener('click', () => {
+        if (currentCorrectWords && currentCorrectWords.length) resetAndShuffle();
+    });
+    backToMenuBtn.addEventListener('click', backToMenu);
+    winBackBtn.addEventListener('click', backToMenu);
+
+    // Создание кнопок выбора (1..10) ровно 2 ряда по 5
+    function buildMenuButtons() {
+        buttonsGrid.innerHTML = '';
+        for (let i = 1; i <= 10; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'level-btn';
+            btn.textContent = i;
+            btn.setAttribute('data-level', i);
+            btn.addEventListener('click', (e) => {
+                const level = parseInt(e.currentTarget.getAttribute('data-level'), 10);
+                loadGame(level);
+            });
+            buttonsGrid.appendChild(btn);
+        }
+    }
+
+    buildMenuButtons();
+    menuScreen.style.display = 'block';
+    gameScreen.style.display = 'none';
+    
+    // Отключаем стандартный drag для картинок
+    window.addEventListener('dragstart', (e) => {
+        if (e.target.tagName === 'IMG') e.preventDefault();
+    });
+</script>
+</body>
+</html>

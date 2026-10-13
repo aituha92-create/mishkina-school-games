@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fff8e9">
+  <title>Игры — Мишкина школа</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: "Trebuchet MS", Arial, sans-serif;
+      color: #352d25;
+      background: #fff8e9;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-width: 320px;
+      margin: 0;
+      padding: 32px 18px 48px;
+      background:
+        radial-gradient(ellipse at 10% 0%, #ffe2a2 0, transparent 38rem),
+        #fff8e9;
+    }
+
+    main {
+      width: min(100%, 1040px);
+      margin: 0 auto;
+    }
+
+    header { margin: 0 0 28px; text-align: center; }
+    h1 { margin: 0; color: #6d461e; font-size: clamp(2rem, 6vw, 3.25rem); }
+    header p { margin: 10px 0 0; color: #695b4b; font-size: 1.1rem; }
+
+    .games {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+      gap: 16px;
+    }
+
+    .game {
+      display: flex;
+      min-height: 112px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 20px;
+      border: 2px solid #f0d8ad;
+      border-radius: 22px;
+      background: #fff;
+      color: inherit;
+      text-decoration: none;
+      box-shadow: 0 5px 14px #65421c12;
+      transition: transform 140ms ease, box-shadow 140ms ease;
+    }
+
+    .game:hover, .game:focus-visible {
+      transform: translateY(-2px);
+      box-shadow: 0 9px 22px #65421c24;
+    }
+
+    .game:focus-visible { outline: 3px solid #3978d4; outline-offset: 3px; }
+    .game h2 { margin: 0; font-size: 1.15rem; line-height: 1.35; }
+    .game span { flex: 0 0 auto; font-size: 1.8rem; }
+    footer { margin-top: 28px; color: #695b4b; text-align: center; font-size: .95rem; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Мишкина школа</h1>
+      <p>Выбери игру и начинай!</p>
+    </header>
+    <section class="games" aria-label="Образовательные игры">
+      <a class="game" href="games/word-balloons/"><h2>Собери слово из шаров</h2><span aria-hidden="true">🎈</span></a>
+      <a class="game" href="games/math-bowling/"><h2>Математический боулинг</h2><span aria-hidden="true">🎳</span></a>
+      <a class="game" href="games/match-words-pictures/"><h2>Соотнеси слова и картинки</h2><span aria-hidden="true">🧩</span></a>
+      <a class="game" href="games/build-word-4-shary/"><h2>Собери слово: ШАРЫ</h2><span aria-hidden="true">🔤</span></a>
+      <a class="game" href="games/build-word-3-shary/"><h2>Составь слово из трёх букв</h2><span aria-hidden="true">🧸</span></a>
+      <a class="game" href="games/build-word-4-shary-alt/"><h2>Составь слово из четырёх букв</h2><span aria-hidden="true">📝</span></a>
+      <a class="game" href="games/count-objects/"><h2>Считай предметы</h2><span aria-hidden="true">🔢</span></a>
+      <a class="game" href="games/build-sentence/"><h2>Собери предложение</h2><span aria-hidden="true">📖</span></a>
+      <a class="game" href="games/knowledge-puzzle/"><h2>Собери пазл знаний</h2><span aria-hidden="true">🧠</span></a>
+      <a class="game" href="games/find-the-word/"><h2>Найди слово</h2><span aria-hidden="true">🔍</span></a>
+    </section>
+    <footer>Игры открываются отдельно и подходят для телефона и компьютера.</footer>
+  </main>
+</body>
+</html>

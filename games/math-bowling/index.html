@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Математический Боулинг</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4facfe;
+            --secondary-color: #00f2fe;
+            --accent-color: #ff9a9e;
+            --text-color: #333;
+            --bg-gradient: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+            --lane-color: #ffeaa7;
+            --gutter-color: #636e72;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Nunito', sans-serif;
+            background: var(--bg-gradient);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .game-container {
+            width: 95%;
+            max-width: 1000px;
+            height: 90vh;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: row;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        /* --- Левая панель (Задания) --- */
+        .math-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .question-box {
+            background: var(--primary-color);
+            color: white;
+            font-family: 'Fredoka One', cursive;
+            font-size: 4rem;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 40px;
+            width: 100%;
+            box-shadow: 0 8px 0 #2980b9;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .answers-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .answer-btn {
+            background: white;
+            border: 4px solid var(--accent-color);
+            color: var(--text-color);
+            font-family: 'Fredoka One', cursive;
+            font-size: 2.5rem;
+            padding: 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: transform 0.1s, background 0.2s;
+            box-shadow: 0 5px 0 #ff6b6b;
+        }
+
+        .answer-btn:hover {
+            transform: translateY(-2px);
+            background: #fff0f0;
+        }
+
+        .answer-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #ff6b6b;
+        }
+
+        /* --- Правая панель (Боулинг) --- */
+        .bowling-area {
+            flex: 1.5;
+            position: relative;
+            background: #dcdde1;
+            border-radius: 20px;
+            overflow: hidden;
+            perspective: 1000px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .score-board {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            background: #2d3436;
+            color: #fff;
+            padding: 10px 30px;
+            border-radius: 50px;
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            display: flex;
+            gap: 20px;
+        }
+
+        .score-item span {
+            color: #ffeaa7;
+        }
+
+        .alley-container {
+            flex-grow: 1;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 20px;
+        }
+
+        .alley {
+            width: 60%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                to bottom,
+                #ffeaa7 0px,
+                #ffeaa7 40px,
+                #fdcb6e 40px,
+                #fdcb6e 42px
+            );
+            border-left: 15px solid #636e72;
+            border-right: 15px solid #636e72;
+            position: relative;
+            transform-style: preserve-3d;
+            transform: rotateX(20deg);
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.2);
+        }
+
+        /* --- Кегли (Исправленная геометрия) --- */
+        .pins-zone {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            /* Ширина зоны кеглей, чтобы они помещались внутри */
+            width: 220px; 
+            height: 200px;
+            /* Центрируем саму зону */
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+
+        .pin {
+            width: 28px;
+            height: 50px;
+            background: white;
+            border-radius: 50% 50% 5px 5px;
+            border: 2px solid #eee;
+            position: absolute; /* Абсолютное позиционирование для точной пирамиды */
+            transition: all 0.5s ease-out;
+            box-shadow: 0 5px 5px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+
+        .pin::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 16px;
+            height: 10px;
+            background: #ff7675;
+            border-radius: 50%;
+        }
+
+        .pin.knocked {
+            opacity: 0;
+            transform: rotate(90deg) scale(0.8) translateY(20px);
+        }
+
+        /* --- Мяч --- */
+        .ball {
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle at 30% 30%, #444, #000);
+            border-radius: 50%;
+            position: absolute;
+            bottom: -80px; 
+            left: 50%;
+            transform: translateX(-50%) scale(0.5);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            z-index: 20;
+            display: none;
+        }
+
+        .ball.moving {
+            display: block;
+            animation: bowlBall 1.5s forwards ease-in;
+        }
+
+        .ball.miss {
+            animation: bowlMiss 1.5s forwards ease-in;
+        }
+
+        @keyframes bowlBall {
+            0% { bottom: -80px; transform: translateX(-50%) scale(0.5); }
+            100% { bottom: 85%; transform: translateX(-50%) scale(1.2); }
+        }
+
+        @keyframes bowlMiss {
+            0% { bottom: -80px; transform: translateX(-50%) scale(0.5); }
+            50% { bottom: 50%; transform: translateX(150%) scale(0.8); }
+            100% { bottom: 100%; transform: translateX(200%) scale(0.6); }
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* Адаптив */
+        @media (max-width: 768px) {
+            .game-container {
+                flex-direction: column;
+                height: 95vh;
+            }
+            .math-panel {
+                flex: 0 0 auto;
+                padding: 10px;
+            }
+            .question-box {
+                font-size: 2.5rem;
+                padding: 15px;
+                margin-bottom: 20px;
+            }
+            .answer-btn {
+                font-size: 1.8rem;
+                padding: 10px;
+            }
+            .alley {
+                width: 90%;
+            }
+            .pins-zone {
+                width: 180px; /* Чуть меньше на мобильных */
+                height: 160px;
+            }
+            .pin {
+                width: 22px;
+                height: 40px;
+            }
+            .pin::before {
+                width: 12px;
+                height: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <!-- Левая часть: Математика -->
+    <div class="math-panel">
+        <div class="question-box" id="question">2 × 2 = ?</div>
+        <div class="answers-grid" id="answers">
+            <!-- Кнопки будут здесь -->
+        </div>
+    </div>
+
+    <!-- Правая часть: Боулинг -->
+    <div class="bowling-area">
+        <div class="score-board">
+            <div class="score-item">Счет: <span id="score">0</span></div>
+        </div>
+        
+        <div class="alley-container">
+            <div class="alley">
+                <!-- Зона кеглей -->
+                <div class="pins-zone" id="pins-zone">
+                    <!-- Кегли генерируются JS -->
+                </div>
+                <div class="ball" id="ball"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- Конфигурация игры ---
+    const state = {
+        score: 0,
+        isAnimating: false,
+        currentAnswer: 0
+    };
+
+    // Элементы DOM
+    const questionEl = document.getElementById('question');
+    const answersEl = document.getElementById('answers');
+    const scoreEl = document.getElementById('score');
+    const pinsZone = document.getElementById('pins-zone');
+    const ballEl = document.getElementById('ball');
+
+    // Координаты для 10 кеглей в форме пирамиды (в процентах от контейнера .pins-zone)
+    // Контейнер имеет фиксированную ширину/высоту, поэтому проценты работают стабильно
+    const pinCoordinates = [
+        // Ряд 1 (1 кегля)
+        { top: '0%', left: '50%' },
+        
+        // Ряд 2 (2 кегли)
+        { top: '30%', left: '25%' }, { top: '30%', left: '75%' },
+        
+        // Ряд 3 (3 кегли)
+        { top: '60%', left: '12.5%' }, { top: '60%', left: '50%' }, { top: '60%', left: '87.5%' },
+        
+        // Ряд 4 (4 кегли)
+        { top: '90%', left: '5%' }, { top: '90%', left: '38%' }, { top: '90%', left: '62%' }, { top: '90%', left: '95%' }
+    ];
+
+    // Функция отрисовки кеглей
+    function renderPins() {
+        pinsZone.innerHTML = '';
+        
+        // Создаем 10 кеглей
+        for(let i = 0; i < 10; i++) {
+            const pin = document.createElement('div');
+            pin.classList.add('pin');
+            
+            // Применяем координаты из массива
+            if (pinCoordinates[i]) {
+                pin.style.top = pinCoordinates[i].top;
+                pin.style.left = pinCoordinates[i].left;
+                // Центрируем саму кеглю относительно точки координат
+                pin.style.transform = 'translate(-50%, 0)'; 
+            }
+            
+            // Сброс классов анимации
+            pin.classList.remove('knocked');
+            pinsZone.appendChild(pin);
+        }
+    }
+
+    // Генерация примера
+    function generateQuestion() {
+        if(state.isAnimating) return;
+
+        // Очистка поля
+        renderPins();
+        ballEl.className = 'ball'; // сброс анимации
+        
+        // Логика чисел (таблица умножения 2-9)
+        const num1 = Math.floor(Math.random() * 8) + 2; 
+        const num2 = Math.floor(Math.random() * 8) + 2;
+        const isDivision = Math.random() > 0.5;
+
+        let questionText = '';
+        let correctAnswer = 0;
+
+        if (isDivision) {
+            // Деление: (num1 * num2) / num1 = num2
+            const dividend = num1 * num2;
+            questionText = `${dividend} : ${num1} = ?`;
+            correctAnswer = num2;
+        } else {
+            // Умножение
+            questionText = `${num1} × ${num2} = ?`;
+            correctAnswer = num1 * num2;
+        }
+
+        state.currentAnswer = correctAnswer;
+        questionEl.textContent = questionText;
+
+        // Генерация вариантов ответа
+        let answers = [correctAnswer];
+        while (answers.length < 3) {
+            // Генерируем неправильный ответ близкий к правильному
+            let offset = Math.floor(Math.random() * 5) + 1;
+            if (Math.random() > 0.5) offset = -offset;
+            let wrong = correctAnswer + offset;
+            
+            if (wrong > 0 && !answers.includes(wrong)) {
+                answers.push(wrong);
+            }
+        }
+
+        // Перемешиваем ответы
+        answers.sort(() => Math.random() - 0.5);
+
+        // Отрисовка кнопок
+        answersEl.innerHTML = '';
+        answers.forEach(ans => {
+            const btn = document.createElement('button');
+            btn.classList.add('answer-btn');
+            btn.textContent = ans;
+            btn.onclick = () => handleAnswer(ans, btn);
+            answersEl.appendChild(btn);
+        });
+    }
+
+    // Обработка ответа
+    function handleAnswer(selected, btnElement) {
+        if (state.isAnimating) return;
+        state.isAnimating = true;
+
+        // Блокируем кнопки визуально
+        const allBtns = document.querySelectorAll('.answer-btn');
+        allBtns.forEach(b => b.style.opacity = '0.5');
+        btnElement.style.opacity = '1';
+
+        const isCorrect = selected === state.currentAnswer;
+
+        if (isCorrect) {
+            btnElement.style.background = '#55efc4'; // Зеленый
+            btnElement.style.borderColor = '#00b894';
+            throwBall(true);
+        } else {
+            btnElement.style.background = '#ff7675'; // Красный
+            btnElement.style.borderColor = '#d63031';
+            throwBall(false);
+        }
+    }
+
+    // Анимация броска
+    function throwBall(isHit) {
+        ballEl.classList.add('moving');
+        if (!isHit) {
+            ballEl.classList.add('miss');
+        }
+
+        // Ждем окончания анимации (1.5 сек)
+        setTimeout(() => {
+            if (isHit) {
+                // Сбиваем кегли
+                const pins = document.querySelectorAll('.pin');
+                pins.forEach((pin, index) => {
+                    // Небольшая задержка для каждой кегли для реалистичности
+                    setTimeout(() => {
+                        pin.classList.add('knocked');
+                    }, index * 50);
+                });
+                
+                state.score += 10;
+                scoreEl.textContent = state.score;
+            }
+
+            // Через паузу после удара даем новое задание
+            setTimeout(() => {
+                state.isAnimating = false;
+                generateQuestion();
+            }, 1000);
+
+        }, 1500);
+    }
+
+    // Инициализация
+    renderPins();
+    generateQuestion();
+
+</script>
+
+</body>
+</html>

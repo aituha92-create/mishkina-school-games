@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Игра: Собери слово</title>
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            --container-bg: rgba(255, 255, 255, 0.95);
+            --primary-btn: #FF6B6B;
+            --success-color: #2ecc71;
+            --text-main: #2c3e50;
+            --ball-size: 90px;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            margin: 0; padding: 20px;
+            font-family: 'Comfortaa', sans-serif;
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .game-wrapper {
+            background: var(--container-bg);
+            border-radius: 35px;
+            padding: 30px 20px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 12px 35px rgba(0,0,0,0.12);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            position: relative;
+            border: 4px dashed #f8b595;
+        }
+
+        h1 { margin: 0; color: var(--text-main); font-size: 1.8rem; font-weight: 800; }
+        .progress { color: #e67e22; font-weight: 600; font-size: 0.95rem; margin-top: -5px; }
+        .hint { color: #7f8c8d; margin: 0; font-size: 1rem; }
+
+        .board {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            min-height: var(--ball-size);
+            padding: 10px 0;
+            flex-wrap: wrap;
+        }
+
+        .ball {
+            width: var(--ball-size);
+            height: var(--ball-size);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.1rem;
+            font-weight: 800;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            cursor: grab;
+            touch-action: none;
+            position: relative;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+            user-select: none;
+            box-shadow: inset -4px -6px 10px rgba(0,0,0,0.15), 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .ball:active { cursor: grabbing; transform: scale(1.08); z-index: 20; }
+        .ball.dragging { opacity: 0.6; transform: scale(0.9); }
+        .ball.success { background: radial-gradient(circle at 30% 30%, #ffd700, #ffaa00) !important; box-shadow: 0 0 15px rgba(255, 215, 0, 0.6); }
+
+        .feedback {
+            min-height: 38px;
+            color: var(--success-color);
+            font-size: 1.5rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            margin: 5px 0;
+        }
+        .feedback.show { opacity: 1; transform: translateY(0); }
+
+        button {
+            background: var(--primary-btn);
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #d9534f;
+            transition: all 0.15s;
+            font-family: inherit;
+            margin: 0 auto;
+        }
+        button:active:not(:disabled) { transform: translateY(6px); box-shadow: none; }
+        button:disabled { background: #bdc3c7; box-shadow: 0 6px 0 #95a5a6; cursor: not-allowed; transform: none; }
+
+        /* Конфетти */
+        .confetti {
+            position: fixed;
+            width: 10px; height: 10px;
+            animation: fall linear forwards;
+            z-index: 50;
+            border-radius: 2px;
+        }
+        @keyframes fall {
+            to { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* Экран завершения */
+        .end-screen { display: none; flex-direction: column; align-items: center; gap: 15px; }
+        .end-screen h2 { color: var(--text-main); margin: 0; }
+        .end-screen p { color: #7f8c8d; margin: 0; font-size: 1.1rem; }
+    </style>
+</head>
+<body>
+
+<div class="game-wrapper">
+    <div id="play-area">
+        <h1>Собери слово</h1>
+        <div class="progress" id="progress">Слово 1 / 27</div>
+        <p class="hint">Перетаскивай буквы, чтобы сложить слово</p>
+        
+        <div class="board" id="board"></div>
+        <div class="feedback" id="message">Молодец!</div>
+        
+        <div style="margin-top: 10px;">
+            <button id="next-btn" disabled>Дальше →</button>
+        </div>
+    </div>
+
+    <div class="end-screen" id="end-screen">
+        <h2>🎉 Отличная работа!</h2>
+        <p>Ты собрал все слова!<br>Попробуй сыграть ещё раз?</p>
+        <button onclick="location.reload()">Начать заново</button>
+    </div>
+</div>
+
+<script>
+    const words = ["каша", "кино", "коза", "кофе", "сова", "нора", "няня", "нога", "небо", "ноты", "лиса", "лапа", "лыжи", "луна", "рука", "рама", "роза", "рыба", "рана", "вода", "пила", "пена", "паук", "мука", "муха", "бусы", "баня"];
+    const ballColors = [
+        'radial-gradient(circle at 30% 30%, #FF6B6B, #ee5253)',
+        'radial-gradient(circle at 30% 30%, #4ECDC4, #29b6f6)',
+        'radial-gradient(circle at 30% 30%, #FFE66D, #fbc531)',
+        'radial-gradient(circle at 30% 30%, #95E1D3, #00b894)',
+        'radial-gradient(circle at 30% 30%, #A29BFE, #6c5ce7)',
+        'radial-gradient(circle at 30% 30%, #FAD390, #e67e22)',
+        'radial-gradient(circle at 30% 30%, #F8EFBA, #fdcb6e)',
+        'radial-gradient(circle at 30% 30%, #C7CEEA, #74b9ff)'
+    ];
+
+    let currentWordIndex = 0;
+    let currentWord = "";
+    let shuffledLetters = [];
+    
+    const board = document.getElementById('board');
+    const nextBtn = document.getElementById('next-btn');
+    const messageEl = document.getElementById('message');
+    const progressEl = document.getElementById('progress');
+    const playArea = document.getElementById('play-area');
+    const endScreen = document.getElementById('end-screen');
+
+    function initGame() {
+        if (currentWordIndex >= words.length) {
+            playArea.style.display = 'none';
+            endScreen.style.display = 'flex';
+            return;
+        }
+
+        currentWord = words[currentWordIndex];
+        progressEl.textContent = `Слово ${currentWordIndex + 1} / ${words.length}`;
+        shuffledLetters = shuffleArray(currentWord.split(''));
+        
+        renderBalls();
+        nextBtn.disabled = true;
+        messageEl.classList.remove('show');
+        board.querySelectorAll('.ball').forEach(b => b.classList.remove('success'));
+    }
+
+    function renderBalls() {
+        board.innerHTML = '';
+        shuffledLetters.forEach((letter, index) => {
+            const ball = document.createElement('div');
+            ball.classList.add('ball');
+            ball.textContent = letter;
+            ball.style.background = ballColors[index % ballColors.length];
+            ball.setAttribute('draggable', 'true');
+            ball.dataset.index = index;
+            
+            // Desktop Drag & Drop
+            ball.addEventListener('dragstart', handleDragStart);
+            ball.addEventListener('dragover', handleDragOver);
+            ball.addEventListener('drop', handleDrop);
+            ball.addEventListener('dragend', handleDragEnd);
+            
+            // Mobile Touch
+            ball.addEventListener('touchstart', handleTouchStart, {passive: false});
+            ball.addEventListener('touchend', handleTouchEnd);
+
+            board.appendChild(ball);
+        });
+    }
+
+    let dragSrcEl = null;
+    let touchSrcEl = null;
+
+    function handleDragStart(e) { dragSrcEl = this; this.style.opacity = '0.5'; }
+    function handleDragEnd() { if(this) this.style.opacity = '1'; }
+    function handleDragOver(e) { e.preventDefault(); return false; }
+    
+    function handleDrop(e) {
+        e.preventDefault();
+        if (dragSrcEl && dragSrcEl !== this) {
+            swapBalls(dragSrcEl, this);
+        }
+    }
+
+    function handleTouchStart(e) {
+        e.preventDefault();
+        touchSrcEl = this;
+        this.classList.add('dragging');
+    }
+
+    function handleTouchEnd(e) {
+        this.classList.remove('dragging');
+        const touch = e.changedTouches[0];
+        // Ищем элемент под пальцем, игнорируя перетаскиваемый шар
+        const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+        if (elemBelow && elemBelow.classList.contains('ball') && elemBelow !== touchSrcEl) {
+            swapBalls(touchSrcEl, elemBelow);
+        }
+        touchSrcEl = null;
+    }
+
+    function swapBalls(el1, el2) {
+        const idx1 = parseInt(el1.dataset.index);
+        const idx2 = parseInt(el2.dataset.index);
+        [shuffledLetters[idx1], shuffledLetters[idx2]] = [shuffledLetters[idx2], shuffledLetters[idx1]];
+        renderBalls();
+        checkWin();
+    }
+
+    function checkWin() {
+        if (shuffledLetters.join('') === currentWord) {
+            messageEl.textContent = `Молодец! Слово: "${currentWord}"`;
+            messageEl.classList.add('show');
+            nextBtn.disabled = false;
+            board.querySelectorAll('.ball').forEach(ball => ball.classList.add('success'));
+            createConfetti();
+        }
+    }
+
+    function createConfetti() {
+        const colors = ['#ff6b6b', '#4ecdc4', '#ffe66d', '#95e1d3', '#a29bfe'];
+        for(let i=0; i<35; i++) {
+            const c = document.createElement('div');
+            c.classList.add('confetti');
+            c.style.left = Math.random() * 100 + 'vw';
+            c.style.top = '-10px';
+            c.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            c.style.animationDuration = (Math.random() * 2 + 1.5) + 's';
+            c.style.width = (Math.random() * 8 + 6) + 'px';
+            c.style.height = (Math.random() * 8 + 6) + 'px';
+            document.body.appendChild(c);
+            setTimeout(() => c.remove(), 3500);
+        }
+    }
+
+    function shuffleArray(array) {
+        let newArr = [...array];
+        for (let i = newArr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+        }
+        // Гарантируем, что стартовое состояние не является решением
+        if (newArr.join('') === array.join('')) return shuffleArray(array);
+        return newArr;
+    }
+
+    nextBtn.addEventListener('click', () => {
+        currentWordIndex++;
+        initGame();
+    });
+
+    // Старт
+    initGame();
+</script>
+
+</body>
+</html>

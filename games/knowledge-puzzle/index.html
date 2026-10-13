@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Собери пазл знаний</title>
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Базовые стили и переменные */
+        :root {
+            --primary-color: #4fc3f7;
+            --success-color: #81c784;
+            --text-color: #1a237e;
+            --bg-color: #f0f8ff;
+            --card-bg: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none; /* Запрет выделения текста */
+            -webkit-user-select: none;
+        }
+
+        body {
+            font-family: 'Comic Neue', cursive;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden; /* Область не меняет положение */
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Анимированный фон */
+        .bg-animation {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            background: linear-gradient(135deg, #e0f7fa 0%, #bbdefb 100%);
+        }
+        .circle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            animation: float 15s infinite linear;
+        }
+        @keyframes float {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
+        }
+
+        /* Заголовок */
+        header {
+            text-align: center;
+            padding: 10px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1565c0;
+            text-shadow: 2px 2px 4px rgba(255,255,255,0.7);
+            flex-shrink: 0;
+        }
+
+        /* Игровое поле */
+        .game-container {
+            display: flex;
+            flex: 1;
+            padding: 10px;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            align-items: center; /* Центрируем панели по вертикали */
+        }
+
+        /* Левая панель - слова (ИЗМЕНЕНО) */
+        .words-panel {
+            flex: 0 1 40%; /* Занимает 40% ширины, не растет */
+            max-width: 450px; /* Ограничение максимальной ширины */
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* Строго 3 колонки, что создает сетку 3x3 */
+            gap: 12px;
+        }
+
+        .word-card {
+            background-color: var(--card-bg);
+            border: 4px solid var(--primary-color);
+            border-radius: 15px;
+            aspect-ratio: 1.8 / 1; /* Карточки теперь адаптивные, сохраняют пропорции */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(1rem, 4vw, 1.8rem); /* Адаптивный размер шрифта */
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            touch-action: none; /* Важно для кастомного Drag&Drop */
+        }
+
+        .word-card:active {
+            transform: scale(0.95);
+        }
+
+        .word-card.revealed {
+            background-color: #fff9c4;
+            border-color: #fbc02d;
+            cursor: grab;
+        }
+
+        .word-card.solved {
+            background-color: var(--success-color);
+            border-color: #388e3c;
+            color: white;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .word-text { display: none; }
+        .word-card.revealed .word-text { display: block; }
+        .word-card.revealed .word-number { display: none; }
+
+        /* Правая панель - пазл (ИЗМЕНЕНО) */
+        .puzzle-panel {
+            flex: 1 1 60%; /* Занимает оставшееся место */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            max-height: 100%;
+        }
+
+        .puzzle-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            aspect-ratio: 4 / 3; /* Примерные пропорции картинки */
+            border: 8px solid #8d6e63;
+            border-radius: 10px;
+            background-color: #ccc;
+            /* ВСТАВЬТЕ ИМЯ ВАШЕГО ФАЙЛА СЮДА */
+            background-image: url('image.jpg'); 
+            background-size: cover;
+            background-position: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        /* Заглушка, если картинка не найдена */
+        .puzzle-wrapper::before {
+            content:  (image.jpg)';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: #666;
+            font-size: 1.2rem;
+            z-index: 0;
+        }
+
+        .puzzle-grid {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            z-index: 1;
+        }
+
+        .puzzle-piece {
+            background-color: #78909c;
+            border: 1px solid #546e7a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: rgba(255,255,255,0.8);
+            font-weight: bold;
+            transition: opacity 0.5s ease;
+        }
+
+        .puzzle-piece.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Призрак для перетаскивания */
+        .drag-ghost {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            background-color: #fff9c4;
+            border: 4px solid #fbc02d;
+            border-radius: 15px;
+            padding: 10px 20px;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-color);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            transform: translate(-50%, -50%) scale(1.1);
+            font-family: 'Comic Neue', cursive;
+        }
+
+        /* Модальное окно победы */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s;
+        }
+        .modal.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            border: 5px solid var(--success-color);
+            transform: scale(0.8);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .modal.show .modal-content {
+            transform: scale(1);
+        }
+        .modal h2 {
+            font-size: 3rem;
+            color: #2e7d32;
+            margin-bottom: 20px;
+        }
+        .btn-restart {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+        }
+
+        /* Адаптивность для мобильных */
+        @media (max-width: 768px) {
+            .game-container {
+                flex-direction: column;
+            }
+            .words-panel {
+                max-width: 100%;
+                width: 100%;
+                flex-basis: auto; /* Сбрасываем базовую ширину */
+            }
+            .puzzle-panel {
+                flex: 1;
+                width: 100%;
+                align-items: flex-start;
+            }
+            .word-card {
+                font-size: clamp(1rem, 5vw, 1.4rem); /* Размер шрифта для мобильных */
+            }
+            header {
+                font-size: 1.2rem;
+            }
+            .puzzle-piece {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Фоновая анимация -->
+    <div class="bg-animation" id="bg-animation"></div>
+
+    <header>Прочитай слово и перетащи на нужную цифру!</header>
+
+    <div class="game-container">
+        <!-- Панель со словами -->
+        <div class="words-panel" id="words-panel"></div>
+
+        <!-- Панель с пазлом -->
+        <div class="puzzle-panel">
+            <div class="puzzle-wrapper">
+                <div class="puzzle-grid" id="puzzle-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно победы -->
+    <div class="modal" id="win-modal">
+        <div class="modal-content">
+            <h2>Ура! Молодец!</h2>
+            <p style="font-size: 1.5rem; margin-bottom: 20px;">Ты собрал всю картинку!</p>
+            <button class="btn-restart" onclick="location.reload()">Играть еще</button>
+        </div>
+    </div>
+
+    <script>
+        // Данные игры
+        const words = ['радуга', 'котик', 'корова', 'дорога', 'малыш', 'колесо', 'машина', 'лампа', 'дерево'];
+        const wordsPanel = document.getElementById('words-panel');
+        const puzzleGrid = document.getElementById('puzzle-grid');
+        let solvedCount = 0;
+
+        // Генерация фоновых кругов
+        const bgAnim = document.getElementById('bg-animation');
+        for(let i=0; i<15; i++) {
+            const circle = document.createElement('div');
+            circle.classList.add('circle');
+            let size = Math.random() * 50 + 20;
+            circle.style.width = size + 'px';
+            circle.style.height = size + 'px';
+            circle.style.left = Math.random() * 100 + 'vw';
+            circle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+            circle.style.animationDelay = (Math.random() * 5) + 's';
+            bgAnim.appendChild(circle);
+        }
+
+        // Инициализация игры
+        function initGame() {
+            // Перемешиваем массив индексов для случайного расположения слов (опционально, но здесь оставим по порядку 1-9 для логики)
+            words.forEach((word, index) => {
+                const id = index + 1;
+
+                // Создаем карточку слова
+                const card = document.createElement('div');
+                card.className = 'word-card';
+                card.dataset.id = id;
+                card.dataset.word = word;
+                
+                card.innerHTML = `
+                    <span class="word-number">${id}</span>
+                    <span class="word-text">${word}</span>
+                `;
+                wordsPanel.appendChild(card);
+
+                // Создаем кусочек пазла (крышку)
+                const piece = document.createElement('div');
+                piece.className = 'puzzle-piece';
+                piece.dataset.id = id;
+                piece.innerText = id;
+                puzzleGrid.appendChild(piece);
+
+                // Добавляем логику нажатия
+                card.addEventListener('click', function() {
+                    if (!this.classList.contains('revealed') && !this.classList.contains('solved')) {
+                        this.classList.add('revealed');
+                    }
+                });
+
+                // Привязываем кастомный Drag & Drop для мыши и сенсоров
+                setupDragAndDrop(card);
+            });
+        }
+
+        // Логика Touch & Mouse Drag & Drop
+        function setupDragAndDrop(element) {
+            let ghost = null;
+
+            const startDrag = (e) => {
+                if (!element.classList.contains('revealed') || element.classList.contains('solved')) return;
+                
+                e.preventDefault(); // Предотвращаем скролл на мобильных
+                
+                const touch = e.type === 'touchstart' ? e.touches[0] : e;
+                
+                // Создаем призрака для перемещения
+                ghost = document.createElement('div');
+                ghost.className = 'drag-ghost';
+                ghost.innerText = element.dataset.word;
+                document.body.appendChild(ghost);
+                
+                moveGhost(touch.clientX, touch.clientY);
+                element.style.opacity = '0.3';
+                
+                document.addEventListener('mousemove', dragMove, {passive: false});
+                document.addEventListener('touchmove', dragMove, {passive: false});
+                document.addEventListener('mouseup', dragEnd);
+                document.addEventListener('touchend', dragEnd);
+            };
+
+            const dragMove = (e) => {
+                if (!ghost) return;
+                e.preventDefault(); // Запрет скролла при перетаскивании
+                const touch = e.type === 'touchmove' ? e.touches[0] : e;
+                moveGhost(touch.clientX, touch.clientY);
+            };
+
+            const dragEnd = (e) => {
+                if (!ghost) return;
+                
+                const touch = e.type === 'touchend' ? e.changedTouches[0] : e;
+                const dropX = touch.clientX;
+                const dropY = touch.clientY;
+
+                // Находим элемент под курсором (призрак имеет pointer-events: none)
+                const target = document.elementFromPoint(dropX, dropY);
+                
+                document.body.removeChild(ghost);
+                ghost = null;
+                element.style.opacity = '1';
+
+                document.removeEventListener('mousemove', dragMove);
+                document.removeEventListener('touchmove', dragMove);
+                document.removeEventListener('mouseup', dragEnd);
+                document.removeEventListener('touchend', dragEnd);
+
+                // Проверяем, попали ли на правильный фрагмент пазла
+                if (target && target.classList.contains('puzzle-piece') && target.dataset.id === element.dataset.id) {
+                    successDrop(element, target);
+                }
+            };
+
+            const moveGhost = (x, y) => {
+                ghost.style.left = x + 'px';
+                ghost.style.top = y + 'px';
+            };
+
+            // Слушатели для мыши и тачпадов
+            element.addEventListener('mousedown', startDrag);
+            element.addEventListener('touchstart', startDrag, {passive: false});
+        }
+
+        // Логика успешного совпадения
+        function successDrop(card, piece) {
+            // Скрываем фрагмент пазла
+            piece.classList.add('hidden');
+            
+            // Отмечаем карточку как решенную
+            card.classList.remove('revealed');
+            card.classList.add('solved');
+            card.innerHTML = '✓';
+
+            solvedCount++;
+
+            // Проверка на победу
+            if (solvedCount === words.length) {
+                setTimeout(() => {
+                    document.getElementById('win-modal').classList.add('show');
+                }, 800);
+            }
+        }
+
+        // Запуск
+        window.onload = initGame;
+
+    </script>
+</body>
+</html>

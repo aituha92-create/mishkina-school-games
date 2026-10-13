@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Считай быстро!</title>
+    <style>
+        /* Общие стили */
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f8ff;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* Главный контейнер игры */
+        #game-container {
+            width: 90vw;
+            height: 85vh;
+            max-width: 1200px;
+            max-height: 800px;
+            border: 5px solid #4682b4;
+            border-radius: 15px;
+            background-color: #ffffff;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            position: relative;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Игровой экран */
+        #game-screen {
+            flex-grow: 1;
+            height: 100%;
+            position: relative;
+        }
+
+        /* Панель управления справа */
+        #controls {
+            width: 250px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #e6f2ff;
+            border-left: 3px solid #4682b4;
+        }
+        
+        /* Настройки скорости */
+        #speed-controls {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        #speed-controls h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .speed-btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .speed-btn {
+            padding: 10px;
+            font-size: 1em;
+            cursor: pointer;
+            border: 2px solid #888;
+            background-color: #f0f0f0;
+            border-radius: 8px;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        .speed-btn.active {
+            background-color: #6495ed;
+            color: white;
+            border-color: #357ebd;
+            font-weight: bold;
+        }
+
+        /* Контейнер для кнопок с ответами */
+        #options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+        }
+
+        /* Стили для кнопок */
+        .option-btn, #retry-btn {
+            padding: 20px;
+            font-size: 2em;
+            font-weight: bold;
+            cursor: pointer;
+            border: 2px solid #357ebd;
+            background-color: #6495ed;
+            color: white;
+            border-radius: 10px;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+        #retry-btn {
+            background-color: #ffc107; /* Янтарный цвет для кнопки повтора */
+            border-color: #e0a800;
+        }
+        .option-btn:hover, #retry-btn:hover {
+            opacity: 0.9;
+        }
+        .option-btn:active, #retry-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Сообщение для пользователя */
+        #message {
+            min-height: 60px;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #d9534f;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Обратный отсчет */
+        #countdown {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 15em;
+            font-weight: bold;
+            color: #4682b4;
+            z-index: 10;
+            transition: opacity 0.5s;
+        }
+
+        /* Стили для падающих фигур */
+        .shape {
+            position: absolute;
+            top: -120px;
+            width: 90px;
+            height: 90px;
+            animation: fall linear forwards;
+        }
+
+        /* Анимация падения */
+        @keyframes fall {
+            0% {
+                top: -120px;
+                transform: rotate(0deg);
+            }
+            100% {
+                top: 110%; /* ИЗМЕНЕНО: Фигуры падают за пределы экрана */
+                transform: rotate(360deg);
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <div id="game-screen"></div>
+        <div id="controls">
+            <div id="speed-controls">
+                <h3>Скорость</h3>
+                <div class="speed-btn-group">
+                    <button class="speed-btn" data-speed="slow">Медленно</button>
+                    <button class="speed-btn active" data-speed="normal">Норма</button>
+                    <button class="speed-btn" data-speed="fast">Быстро</button>
+                    <button class="speed-btn" data-speed="very_fast">Очень быстро</button>
+                </div>
+            </div>
+            <div id="message"></div>
+            <div id="options-container"></div>
+        </div>
+        <div id="countdown">3</div>
+    </div>
+
+    <script>
+        // --- Настройки игры ---
+        const MIN_SHAPES = 2;
+        const MAX_SHAPES = 10;
+        const speedSettings = {
+            slow: { min: 8, max: 10 },
+            normal: { min: 5, max: 7 },
+            fast: { min: 3, max: 4 },
+            very_fast: { min: 1.5, max: 2.5 }
+        };
+
+        // --- Получение элементов DOM ---
+        const gameScreen = document.getElementById('game-screen');
+        const optionsContainer = document.getElementById('options-container');
+        const messageEl = document.getElementById('message');
+        const countdownEl = document.getElementById('countdown');
+        const speedButtons = document.querySelectorAll('.speed-btn');
+
+        // --- Определения фигур (SVG) ---
+        const shapes = [
+            { name: 'triangle', color: '#ff6347', svg: '<svg viewBox="0 0 100 100"><polygon points="50,10 90,90 10,90" fill="{color}"/></svg>' },
+            { name: 'square', color: '#4682b4', svg: '<svg viewBox="0 0 100 100"><rect x="10" y="10" width="80" height="80" fill="{color}"/></svg>' },
+            { name: 'circle', color: '#32cd32', svg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="{color}"/></svg>' },
+            { name: 'star', color: '#ffd700', svg: '<svg viewBox="0 0 100 100"><polygon points="50,5 61,35 95,35 68,57 78,91 50,70 22,91 32,57 5,35 39,35" fill="{color}"/></svg>' },
+            { name: 'rhombus', color: '#9370db', svg: '<svg viewBox="0 0 100 100"><polygon points="50,10 90,50 50,90 10,50" fill="{color}"/></svg>' }
+        ];
+
+        // --- Состояние игры ---
+        let currentLevelData = {};
+        let isAnswering = false;
+        let currentSpeed = 'normal';
+
+        /**
+         * Воспроизводит простой звуковой сигнал
+         */
+        function playSound() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+                oscillator.connect(audioContext.destination);
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 0.2);
+            } catch (e) {
+                console.error("Не удалось воспроизвести звук:", e);
+            }
+        }
+
+        /**
+         * Генерирует случайное число в диапазоне
+         */
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        
+        /**
+         * Устанавливает текущую скорость
+         */
+        function setSpeed(speed) {
+            currentSpeed = speed;
+            speedButtons.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.speed === speed) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        /**
+         * Запускает новый раунд игры
+         */
+        function nextRound() {
+            isAnswering = false;
+            gameScreen.innerHTML = '';
+            optionsContainer.innerHTML = '';
+            messageEl.textContent = '';
+            messageEl.style.color = '#d9534f';
+
+            countdownEl.style.display = 'flex';
+            countdownEl.style.opacity = '1';
+            let count = 3;
+            countdownEl.textContent = count;
+
+            const countdownInterval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    countdownEl.textContent = count;
+                } else {
+                    clearInterval(countdownInterval);
+                    countdownEl.style.opacity = '0';
+                    setTimeout(() => {
+                        countdownEl.style.display = 'none';
+                        playSound();
+                        generateLevel();
+                    }, 500);
+                }
+            }, 1000);
+        }
+
+        /**
+         * Отображает фигуры на экране на основе предоставленных данных
+         */
+        function renderShapes(levelData) {
+            gameScreen.innerHTML = '';
+            levelData.shapes.forEach(shapeData => {
+                const shapeEl = document.createElement('div');
+                shapeEl.classList.add('shape');
+                shapeEl.style.left = shapeData.left;
+                shapeEl.style.animationDuration = shapeData.duration;
+                shapeEl.style.animationDelay = shapeData.delay;
+                shapeEl.innerHTML = levelData.shapeInfo.svg.replace('{color}', levelData.shapeInfo.color);
+                gameScreen.appendChild(shapeEl);
+            });
+        }
+        
+        /**
+         * Отображает кнопки с вариантами ответов
+         */
+        function renderOptions() {
+            optionsContainer.innerHTML = '';
+            const options = new Set([currentLevelData.correctAnswer]);
+            while (options.size < 3) {
+                let wrongAnswer = currentLevelData.correctAnswer + getRandomInt(-2, 2);
+                if (wrongAnswer !== currentLevelData.correctAnswer && wrongAnswer > 0 && wrongAnswer <= MAX_SHAPES) {
+                    options.add(wrongAnswer);
+                }
+            }
+            const shuffledOptions = Array.from(options).sort(() => Math.random() - 0.5);
+
+            shuffledOptions.forEach(num => {
+                const button = document.createElement('button');
+                button.classList.add('option-btn');
+                button.textContent = num;
+                button.onclick = () => checkAnswer(num);
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        /**
+         * Создает НОВЫЙ уровень
+         */
+        function generateLevel() {
+            currentLevelData = { shapes: [] };
+            
+            const shapeInfo = shapes[getRandomInt(0, shapes.length - 1)];
+            const shapeCount = getRandomInt(MIN_SHAPES, MAX_SHAPES);
+            
+            currentLevelData.shapeInfo = shapeInfo;
+            currentLevelData.correctAnswer = shapeCount;
+
+            const speed = speedSettings[currentSpeed];
+            
+            for (let i = 0; i < shapeCount; i++) {
+                const duration = (Math.random() * (speed.max - speed.min) + speed.min).toFixed(2);
+                const delay = (i * 0.4 + Math.random() * 0.2).toFixed(2);
+                
+                currentLevelData.shapes.push({
+                    left: `${getRandomInt(5, 80)}%`,
+                    duration: `${duration}s`,
+                    delay: `${delay}s`
+                });
+            }
+            
+            renderShapes(currentLevelData);
+            renderOptions();
+            isAnswering = true;
+        }
+
+        /**
+         * Повторяет текущий уровень
+         */
+        function replayLevel() {
+             messageEl.textContent = '';
+             renderShapes(currentLevelData);
+             renderOptions();
+             isAnswering = true;
+        }
+
+        /**
+         * Проверяет ответ игрока
+         */
+        function checkAnswer(chosenNumber) {
+            if (!isAnswering) return;
+
+            if (chosenNumber === currentLevelData.correctAnswer) {
+                isAnswering = false;
+                messageEl.textContent = 'Правильно!';
+                messageEl.style.color = 'green';
+                setTimeout(nextRound, 1500);
+            } else {
+                isAnswering = false;
+                messageEl.textContent = 'Попробуй еще раз!';
+                optionsContainer.innerHTML = '';
+                
+                const retryBtn = document.createElement('button');
+                retryBtn.textContent = 'Повторить';
+                retryBtn.id = 'retry-btn';
+                retryBtn.onclick = replayLevel;
+                optionsContainer.appendChild(retryBtn);
+            }
+        }
+
+        // --- Запуск игры и настройка событий ---
+        document.addEventListener('DOMContentLoaded', () => {
+            speedButtons.forEach(button => {
+                button.addEventListener('click', () => setSpeed(button.dataset.speed));
+            });
+            nextRound();
+        });
+
+    </script>
+</body>
+</html>
