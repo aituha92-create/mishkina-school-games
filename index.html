@@ -3,92 +3,580 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#fff8e9">
-  <title>Игры — Мишкина школа</title>
+  <meta name="theme-color" content="#fff3df">
+  <title>Мишкина игротека — игры для детей</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap&subset=cyrillic" rel="stylesheet">
   <style>
     :root {
       color-scheme: light;
-      font-family: "Trebuchet MS", Arial, sans-serif;
-      color: #352d25;
-      background: #fff8e9;
+      font-family: Nunito, Arial, sans-serif;
+      background: #f6ead6;
+      color: #251914;
     }
 
     * { box-sizing: border-box; }
+    body { margin: 0; padding: 28px 18px 52px; }
 
-    body {
-      min-width: 320px;
-      margin: 0;
-      padding: 32px 18px 48px;
-      background:
-        radial-gradient(ellipse at 10% 0%, #ffe2a2 0, transparent 38rem),
-        #fff8e9;
-    }
-
-    main {
-      width: min(100%, 1040px);
+    #mishkina-igroteka {
+      --mi-brown: #461e1e;
+      --mi-orange: #e89b19;
+      --mi-orange-dark: #c96b12;
+      --mi-cream: #fff3df;
+      --mi-paper: #fffaf1;
+      --mi-ink: #251914;
+      --mi-muted: #65534a;
+      --mi-border: #efddb9;
+      width: min(100%, 1160px);
       margin: 0 auto;
+      overflow: hidden;
+      border: 1px solid #f1dfc0;
+      border-radius: 32px;
+      background:
+        radial-gradient(ellipse at 8% 0%, #ffe1a5 0, transparent 35%),
+        radial-gradient(ellipse at 96% 14%, #ffe9bd 0, transparent 31%),
+        var(--mi-cream);
+      box-shadow: 0 12px 34px rgb(83 49 17 / 15%);
+      font-family: Nunito, Arial, sans-serif;
+      color: var(--mi-ink);
     }
 
-    header { margin: 0 0 28px; text-align: center; }
-    h1 { margin: 0; color: #6d461e; font-size: clamp(2rem, 6vw, 3.25rem); }
-    header p { margin: 10px 0 0; color: #695b4b; font-size: 1.1rem; }
+    #mishkina-igroteka,
+    #mishkina-igroteka * { box-sizing: border-box; }
 
-    .games {
+    #mishkina-igroteka a { font-family: inherit; }
+
+    #mishkina-igroteka .mi-hero {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
-      gap: 16px;
+      grid-template-columns: minmax(0, 1.04fr) minmax(310px, .96fr);
+      align-items: center;
+      gap: 30px;
+      min-height: 404px;
+      padding: clamp(26px, 5vw, 58px);
     }
 
-    .game {
+    #mishkina-igroteka .mi-copy { position: relative; z-index: 1; }
+
+    #mishkina-igroteka h1 {
+      max-width: 640px;
+      margin: 0;
+      color: #18110e;
+      font-size: clamp(2.2rem, 5vw, 3.85rem);
+      font-weight: 900;
+      letter-spacing: -.045em;
+      line-height: 1.1;
+    }
+
+    #mishkina-igroteka h1 span { color: var(--mi-orange-dark); }
+
+    #mishkina-igroteka .mi-subtitle {
+      margin: 13px 0 0;
+      color: var(--mi-brown);
+      font-size: clamp(1.16rem, 2.1vw, 1.52rem);
+      font-weight: 900;
+      line-height: 1.3;
+    }
+
+    #mishkina-igroteka .mi-intro {
+      max-width: 530px;
+      margin: 12px 0 23px;
+      color: #49352c;
+      font-size: clamp(1rem, 1.55vw, 1.12rem);
+      font-weight: 600;
+      line-height: 1.58;
+    }
+
+    #mishkina-igroteka .mi-actions {
       display: flex;
-      min-height: 112px;
+      flex-wrap: wrap;
       align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      padding: 20px;
-      border: 2px solid #f0d8ad;
-      border-radius: 22px;
+      gap: 12px;
+    }
+
+    #mishkina-igroteka .mi-button {
+      display: inline-flex;
+      min-height: 48px;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 12px 21px;
+      border: 0;
+      border-radius: 12px;
+      background: var(--mi-brown);
+      box-shadow: 0 4px 0 #2d1111, 0 7px 15px rgb(70 30 30 / 16%);
+      color: #fff;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 900;
+      line-height: 1.2;
+      text-decoration: none;
+      transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease;
+    }
+
+    #mishkina-igroteka .mi-button:hover {
+      transform: translateY(-2px);
+      background: #5a2924;
+      box-shadow: 0 6px 0 #2d1111, 0 10px 18px rgb(70 30 30 / 18%);
+    }
+
+    #mishkina-igroteka .mi-button:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 #2d1111;
+    }
+
+    #mishkina-igroteka .mi-button:focus-visible,
+    #mishkina-igroteka .mi-card:focus-visible {
+      outline: 3px solid #286eab;
+      outline-offset: 4px;
+    }
+
+    #mishkina-igroteka .mi-button-secondary {
+      background: #fffaf1;
+      box-shadow: 0 4px 0 #e8d4ae, 0 7px 15px rgb(70 30 30 / 8%);
+      color: var(--mi-brown);
+    }
+
+    #mishkina-igroteka .mi-button-secondary:hover {
       background: #fff;
+      box-shadow: 0 6px 0 #e8d4ae, 0 10px 18px rgb(70 30 30 / 10%);
+    }
+
+    #mishkina-igroteka .mi-mascot {
+      position: relative;
+      display: grid;
+      min-height: 294px;
+      place-items: center;
+    }
+
+    #mishkina-igroteka .mi-mascot picture {
+      position: relative;
+      z-index: 1;
+      display: block;
+      width: min(100%, 490px);
+      line-height: 0;
+    }
+
+    #mishkina-igroteka .mi-mascot img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 23px;
+      object-fit: contain;
+      filter: drop-shadow(0 12px 10px rgb(76 42 19 / 12%));
+    }
+
+    #mishkina-igroteka .mi-spark {
+      position: absolute;
+      z-index: 2;
+      color: var(--mi-orange);
+      font-size: 1.6rem;
+      line-height: 1;
+    }
+
+    #mishkina-igroteka .mi-spark-one { top: 14%; right: 9%; transform: rotate(12deg); }
+    #mishkina-igroteka .mi-spark-two { bottom: 11%; left: 5%; color: #73a844; transform: rotate(-12deg); }
+
+    #mishkina-igroteka .mi-shelf {
+      padding: 31px clamp(18px, 4.7vw, 54px) 46px;
+      border-top: 2px solid rgb(232 155 25 / 24%);
+      background: rgb(255 250 241 / 76%);
+    }
+
+    #mishkina-igroteka .mi-section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 18px;
+      margin: 0 0 21px;
+    }
+
+    #mishkina-igroteka h2 {
+      margin: 0;
+      color: #241711;
+      font-size: clamp(1.55rem, 3.2vw, 2.15rem);
+      font-weight: 900;
+      letter-spacing: -.025em;
+      line-height: 1.15;
+    }
+
+    #mishkina-igroteka .mi-section-head p {
+      margin: 6px 0 0;
+      color: var(--mi-muted);
+      font-size: .98rem;
+      font-weight: 600;
+      line-height: 1.5;
+    }
+
+    #mishkina-igroteka .mi-count {
+      flex: 0 0 auto;
+      padding: 7px 12px;
+      border: 1px solid #f0d9ab;
+      border-radius: 999px;
+      background: #fff5df;
+      color: #75461d;
+      font-size: .9rem;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    #mishkina-igroteka .mi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 17px;
+    }
+
+    #mishkina-igroteka .mi-card {
+      display: flex;
+      min-width: 0;
+      min-height: 250px;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 19px;
+      border: 1px solid var(--mi-border);
+      border-radius: 20px;
+      background: #fff;
+      box-shadow: 0 4px 12px rgb(83 49 17 / 7%);
       color: inherit;
       text-decoration: none;
-      box-shadow: 0 5px 14px #65421c12;
-      transition: transform 140ms ease, box-shadow 140ms ease;
+      transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
     }
 
-    .game:hover, .game:focus-visible {
-      transform: translateY(-2px);
-      box-shadow: 0 9px 22px #65421c24;
+    #mishkina-igroteka .mi-card:hover {
+      transform: translateY(-4px);
+      border-color: #e8b254;
+      box-shadow: 0 10px 22px rgb(83 49 17 / 13%);
     }
 
-    .game:focus-visible { outline: 3px solid #3978d4; outline-offset: 3px; }
-    .game h2 { margin: 0; font-size: 1.15rem; line-height: 1.35; }
-    .game span { flex: 0 0 auto; font-size: 1.8rem; }
-    footer { margin-top: 28px; color: #695b4b; text-align: center; font-size: .95rem; }
+    #mishkina-igroteka .mi-art {
+      display: grid;
+      width: 74px;
+      height: 70px;
+      flex: 0 0 auto;
+      place-items: center;
+      margin: 0 0 13px;
+      border: 1px solid #f1e0c4;
+      border-radius: 18px;
+      background: linear-gradient(145deg, #fff7e7, #fff0d3);
+    }
+
+    #mishkina-igroteka .mi-art svg { display: block; width: 54px; height: 54px; }
+
+    #mishkina-igroteka h3 {
+      margin: 0;
+      color: var(--mi-brown);
+      font-size: 1.12rem;
+      font-weight: 900;
+      line-height: 1.3;
+    }
+
+    #mishkina-igroteka .mi-description {
+      margin: 7px 0 15px;
+      color: var(--mi-muted);
+      font-size: .94rem;
+      font-weight: 600;
+      line-height: 1.5;
+    }
+
+    #mishkina-igroteka .mi-play {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-top: auto;
+      padding: 8px 13px;
+      border-radius: 10px;
+      background: #fff1d5;
+      color: #75431b;
+      font-size: .94rem;
+      font-weight: 900;
+      transition: background 150ms ease, color 150ms ease;
+    }
+
+    #mishkina-igroteka .mi-card:hover .mi-play {
+      background: var(--mi-brown);
+      color: #fff;
+    }
+
+    #mishkina-igroteka .mi-note {
+      margin: 23px 0 0;
+      color: #715b4f;
+      font-size: .88rem;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    @media (max-width: 820px) {
+      body { padding: 16px 10px 30px; }
+      #mishkina-igroteka { border-radius: 25px; }
+      #mishkina-igroteka .mi-hero {
+        grid-template-columns: minmax(0, 1fr) minmax(220px, .78fr);
+        gap: 14px;
+        min-height: 0;
+        padding: 28px;
+      }
+      #mishkina-igroteka .mi-mascot { min-height: 0; }
+      #mishkina-igroteka .mi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      #mishkina-igroteka .mi-card { min-height: 235px; }
+    }
+
+    @media (max-width: 560px) {
+      body { padding: 10px 7px 22px; }
+      #mishkina-igroteka { border-radius: 21px; }
+      #mishkina-igroteka .mi-hero {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        padding: 25px 20px 19px;
+        text-align: center;
+      }
+      #mishkina-igroteka h1 { margin: 0 auto; font-size: clamp(2rem, 9.5vw, 3rem); }
+      #mishkina-igroteka .mi-subtitle { margin-top: 10px; font-size: 1.2rem; }
+      #mishkina-igroteka .mi-intro { margin: 11px auto 18px; font-size: 1rem; }
+      #mishkina-igroteka .mi-actions { justify-content: center; }
+      #mishkina-igroteka .mi-button { min-height: 46px; padding: 11px 15px; font-size: .94rem; }
+      #mishkina-igroteka .mi-mascot { min-height: 0; margin-top: 2px; }
+      #mishkina-igroteka .mi-mascot picture { width: min(100%, 330px); }
+      #mishkina-igroteka .mi-shelf { padding: 25px 14px 31px; }
+      #mishkina-igroteka .mi-section-head { align-items: flex-start; margin-bottom: 15px; }
+      #mishkina-igroteka h2 { font-size: 1.55rem; }
+      #mishkina-igroteka .mi-section-head p { font-size: .91rem; }
+      #mishkina-igroteka .mi-count { padding: 6px 9px; font-size: .78rem; }
+      #mishkina-igroteka .mi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+      #mishkina-igroteka .mi-card { min-height: 234px; padding: 13px 12px; border-radius: 16px; }
+      #mishkina-igroteka .mi-art { width: 62px; height: 60px; margin-bottom: 11px; border-radius: 15px; }
+      #mishkina-igroteka .mi-art svg { width: 48px; height: 48px; }
+      #mishkina-igroteka h3 { font-size: .98rem; }
+      #mishkina-igroteka .mi-description { margin: 6px 0 12px; font-size: .85rem; line-height: 1.43; }
+      #mishkina-igroteka .mi-play { padding: 7px 10px; font-size: .87rem; }
+      #mishkina-igroteka .mi-note { margin-top: 18px; font-size: .82rem; }
+    }
+
+    @media (max-width: 360px) {
+      #mishkina-igroteka .mi-grid { grid-template-columns: 1fr; }
+      #mishkina-igroteka .mi-card { min-height: 0; }
+      #mishkina-igroteka .mi-description { min-height: 0; }
+    }
 
     @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+      #mishkina-igroteka *,
+      #mishkina-igroteka *::before,
+      #mishkina-igroteka *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+      }
     }
   </style>
 </head>
 <body>
-  <main>
-    <header>
-      <h1>Мишкина школа</h1>
-      <p>Выбери игру и начинай!</p>
-    </header>
-    <section class="games" aria-label="Образовательные игры">
-      <a class="game" href="games/word-balloons/"><h2>Собери слово из шаров</h2><span aria-hidden="true">🎈</span></a>
-      <a class="game" href="games/math-bowling/"><h2>Математический боулинг</h2><span aria-hidden="true">🎳</span></a>
-      <a class="game" href="games/match-words-pictures/"><h2>Соотнеси слова и картинки</h2><span aria-hidden="true">🧩</span></a>
-      <a class="game" href="games/build-word-4-shary/"><h2>Собери слово: ШАРЫ</h2><span aria-hidden="true">🔤</span></a>
-      <a class="game" href="games/build-word-3-shary/"><h2>Составь слово из трёх букв</h2><span aria-hidden="true">🧸</span></a>
-      <a class="game" href="games/build-word-4-shary-alt/"><h2>Составь слово из четырёх букв</h2><span aria-hidden="true">📝</span></a>
-      <a class="game" href="games/count-objects/"><h2>Считай предметы</h2><span aria-hidden="true">🔢</span></a>
-      <a class="game" href="games/build-sentence/"><h2>Собери предложение</h2><span aria-hidden="true">📖</span></a>
-      <a class="game" href="games/knowledge-puzzle/"><h2>Собери пазл знаний</h2><span aria-hidden="true">🧠</span></a>
-      <a class="game" href="games/find-the-word/"><h2>Найди слово</h2><span aria-hidden="true">🔍</span></a>
-    </section>
-    <footer>Игры открываются отдельно и подходят для телефона и компьютера.</footer>
-  </main>
+  <section id="mishkina-igroteka" aria-labelledby="mi-title">
+    <div class="mi-hero">
+      <div class="mi-copy">
+        <h1 id="mi-title">🧸 Мишкина <span>игротека</span></h1>
+        <p class="mi-subtitle">Учимся играя — вместе с Мишкой!</p>
+        <p class="mi-intro">Выбирай игру, решай весёлые задачки, собирай слова, тренируй внимание и открывай новые знания. Здесь каждое задание — маленькое приключение!</p>
+        <div class="mi-actions">
+          <a class="mi-button" id="mi-choose" href="#mi-games">🎮 Выбрать игру</a>
+        </div>
+      </div>
+      <div class="mi-mascot">
+        <picture>
+          <source
+            media="(max-width: 560px)"
+            srcset="https://aituha92-create.github.io/mishkina-school-games/assets/igroteka/igroteka-mobile.png">
+          <img
+            src="https://aituha92-create.github.io/mishkina-school-games/assets/igroteka/igroteka-desktop.png"
+            alt="Мишка играет вместе с детьми: они собирают слова и решают примеры"
+            width="1199"
+            height="656"
+            loading="eager">
+        </picture>
+      </div>
+    </div>
+
+    <div class="mi-shelf" id="mi-games">
+      <div class="mi-section-head">
+        <div>
+          <h2>Во что поиграем?</h2>
+          <p>Найди игру по душе и нажми «Играть».</p>
+        </div>
+        <span class="mi-count"><span id="mi-game-count">10</span> игр</span>
+      </div>
+
+      <div class="mi-grid">
+        <a class="mi-card" href="games/word-balloons/index.html" aria-label="Играть: Собери слово из шаров">
+          <span class="mi-art" aria-hidden="true">
+            <svg viewBox="0 0 64 64" fill="none">
+              <path d="M19 32c-6 0-10-5-10-11a10 10 0 0 1 20 0c0 6-4 11-10 11Zm0 0 3 7-4 5m27-13c-6 0-10-5-10-11a10 10 0 0 1 20 0c0 6-4 11-10 11Zm0 0-3 7 4 5" stroke="#75431b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M19 8c-5 0-8 4-8 9 0 3 1 5 3 7 4-1 8-4 11-9-1-4-3-7-6-7Z" fill="#ed7b58"/>
+              <path d="M45 8c-5 0-8 4-8 9 0 3 1 5 3 7 4-1 8-4 11-9-1-4-3-7-6-7Z" fill="#75a952"/>
+              <path d="M32 42c-6 0-10-5-10-11a10 10 0 0 1 20 0c0 6-4 11-10 11Zm0 0 3 7-4 5" stroke="#75431b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M32 18c-5 0-8 4-8 9 0 3 1 5 3 7 4-1 8-4 11-9-1-4-3-7-6-7Z" fill="#e8a51e"/>
+            </svg>
+          </span>
+          <h3>Собери слово из шаров</h3>
+          <p class="mi-description">Переставляй воздушные шарики с буквами и открывай новые слова.</p>
+          <span class="mi-play">Играть <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="mi-card" href="games/math-bowling/index.html" aria-label="Играть: Математический боулинг">
+          <span class="mi-art" aria-hidden="true">
+            <svg viewBox="0 0 64 64" fill="none">
+              <path d="M23 13h8l3 18a7 7 0 0 1-14 0l3-18Zm15 0h8l3 18a7 7 0 0 1-14 0l3-18Z" fill="#fff" stroke="#75431b" stroke-width="2.5" stroke-linejoin="round"/>
+              <path d="M22 22h11m5 0h11" stroke="#ed7b58" stroke-width="4"/>
+              <path d="M33 52a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z" fill="#e89b19" stroke="#75431b" stroke-width="2.5"/>
+              <circle cx="30" cy="39" r="1.5" fill="#75431b"/><circle cx="35" cy="38" r="1.5" fill="#75431b"/><circle cx="33" cy="43" r="1.5" fill="#75431b"/>
+              <path d="M15 55h34" stroke="#75431b" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <h3>Математический боулинг</h3>
+          <p class="mi-description">Решай примеры и сбивай кегли — тренируй счёт с азартом!</p>
+          <span class="mi-play">Играть <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="mi-card" href="games/match-words-pictures/index.html" aria-label="Играть: Соотнеси слова и картинки">
+          <span class="mi-art" aria-hidden="true">
+            <svg viewBox="0 0 64 64" fill="none">
+              <rect x="7" y="11" width="22" height="39" rx="5" fill="#fff" stroke="#75431b" stroke-width="2.5"/>
+              <rect x="35" y="11" width="22" height="39" rx="5" fill="#fff" stroke="#75431b" stroke-width="2.5"/>
+              <path d="M18 34c-6-4-5-12 0-12 3 0 4 3 4 3s1-3 4-3c5 0 6 8 0 12l-4 4-4-4Z" fill="#ed7b58"/>
+              <path d="M42 25h8m-8 7h8m-8 7h6" stroke="#77a958" stroke-width="3" stroke-linecap="round"/>
+              <path d="M28 30h8" stroke="#e89b19" stroke-width="2.5" stroke-dasharray="3 3"/>
+              <path d="M14 55h36" stroke="#75431b" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <h3>Слова и картинки</h3>
+          <p class="mi-description">Прочитай слово и найди подходящую картинку среди животных.</p>
+          <span class="mi-play">Играть <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="mi-card" href="games/build-word-4-shary/index.html" aria-label="Играть: Собери слово ШАРЫ">
+          <span class="mi-art" aria-hidden="true">
+            <svg viewBox="0 0 64 64" fill="none">
+              <rect x="7" y="9" width="22" height="22" rx="6" fill="#f6c95d" stroke="#75431b" stroke-width="2.5"/>
+              <rect x="35" y="9" width="22" height="22" rx="6" fill="#a9ce7a" stroke="#75431b" stroke-width="2.5"/>
+              <rect x="7" y="37" width="22" height="18" rx="6" fill="#f19a78" stroke="#75431b" stroke-width="2.5"/>
+              <rect x="35" y="37" width="22" height="18" rx="6" fill="#90c2df" stroke="#75431b" stroke-width="2.5"/>
+              <text x="18" y="26" text-anchor="middle" fill="#461e1e" font-family="Nunito,Arial,sans-serif" font-size="17" font-weight="900">Ш</text>
+              <text x="46" y="26" text-anchor="middle" fill="#461e1e" font-family="Nunito,Arial,sans-serif" font-size="17" font-weight="900">А</text>
+              <text x="18" y="52" text-anchor="middle" fill="#461e1e" font-family="Nunito,Arial,sans-serif" font-size="15" font-weight="900">Р</text>
+              <text x="46" y="52" text-anchor="middle" fill="#461e1e" font-family="Nunito,Arial,sans-serif" font-size="15" font-weight="900">Ы</text>
+            </svg>
+          </span>
+          <h3>Собери слово «ШАРЫ»</h3>
+          <p class="mi-description">Перетаскивай буквы и собери знакомое слово по порядку.</p>
+          <span class="mi-play">Играть <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="mi-card" href="games/build-word-3-shary/index.html" aria-label="Играть: Составь слово из трёх букв">
+          <span class="mi-art" aria-hidden="true">
+            <svg viewBox="0 0 64 64" fill="none">
+              <path d="M14 48V17h12c8 0 8 12 0 12H14m12 0c9 0 9 19 0 19H14" stroke="#ed7b58" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M37 17h13M43.5 17v31" stroke="#79a953" stroke-width="5" stroke-linecap="round"/>
+              <path d="M35 48h17" stroke="#79a953" stroke-width="5" stroke-linecap="round"/>
+              <path d="M16 10h34" stroke="#e8a51e" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="2 5"/>
+            </svg>
+          </span>
+          <h3>Составь слово из 3 букв</h3>
+          <p class="mi-description">Расставь буквы на места и прочитай короткое слово.</p>
+          <span class="mi-play">Играть <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="mi-card" href="games/build-word-4-shary-alt/index.html" aria-label="Играть: Составь слово из четырёх букв">
+          <span class="mi-art" aria-hidden="true">
+            <svg viewBox="0 0 64 64" fill="none">
+              <path d="m14 48 12-31 12 31M18 38h16m5 10 10-26 10 26m-16-8h13" stroke="#75431b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M14 48h25" stroke="#ed7b58" stroke-width="5" stroke-linecap="round"/>
+              <circle cx="47" cy="16" r="4" fill="#e8a51e"/><circle cx="25" cy="13" r="3" fill="#79a953"/>
+            </svg>
+          </span>
+          <h3>Составь слово из 4 букв</h3>
+          <p class="mi-description">Собери буквы вместе и помоги слову найти своё место.</p>
+          <span class="mi-play">Играть <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="mi-card" href="games/count-objects/index.html" aria-label="Играть: Считай предметы">
+          <span class="mi-art" aria-hidden="true">
+            <svg viewBox="0 0 64 64" fill="none">
+              <rect x="9" y="12" width="46" height="40" rx="10" fill="#fff" stroke="#75431b" stroke-width="2.5"/>
+              <circle cx="21" cy="24" r="4" fill="#ed7b58"/><circle cx="32" cy="24" r="4" fill="#e8a51e"/><circle cx="43" cy="24" r="4" fill="#79a953"/>
+              <circle cx="21" cy="39" r="4" fill="#79a953"/><circle cx="32" cy="39" r="4" fill="#ed7b58"/><circle cx="43" cy="39" r="4" fill="#e8a51e"/>
+              <path d="M18 57h28" stroke="#75431b" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <h3>Считай предметы</h3>
+          <p class="mi-description">Посчитай, сколько предметов увидишь на экране. Успей вовремя!</p>
+          <span class="mi-play">Играть <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="mi-card" href="games/build-sentence/index.html" aria-label="Играть: Собери предложение">
+          <span class="mi-art" aria-hidden="true">
+            <svg viewBox="0 0 64 64" fill="none">
+              <path d="M10 16a7 7 0 0 1 7-7h29a7 7 0 0 1 7 7v33a6 6 0 0 0-6-6H17a7 7 0 0 0-7 7V16Z" fill="#fff" stroke="#75431b" stroke-width="2.5" stroke-linejoin="round"/>
+              <path d="M17 18h27m-27 8h23m-23 8h25" stroke="#ed7b58" stroke-width="3" stroke-linecap="round"/>
+              <path d="M16 46h29a7 7 0 0 1 7 7H17a7 7 0 0 1-7-7" fill="#e8a51e" stroke="#75431b" stroke-width="2.5" stroke-linejoin="round"/>
+              <path d="m49 10 2-4m4 7 4-1" stroke="#79a953" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <h3>Собери предложение</h3>
+          <p class="mi-description">Наведи порядок в словах и составь из них предложение.</p>
+          <span class="mi-play">Играть <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="mi-card" href="games/knowledge-puzzle/index.html" aria-label="Играть: Собери пазл знаний">
+          <span class="mi-art" aria-hidden="true">
+            <svg viewBox="0 0 64 64" fill="none">
+              <path d="M10 11h17v6a5 5 0 1 0 10 0v-6h17v17h-6a5 5 0 1 0 0 10h6v16H37v-6a5 5 0 1 0-10 0v6H10V37h6a5 5 0 1 0 0-10h-6V11Z" fill="#f6c95d" stroke="#75431b" stroke-width="2.5" stroke-linejoin="round"/>
+              <path d="M18 19h8m-8 8h6m14 14 5-5 5 5" stroke="#ed7b58" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="45" cy="25" r="3" fill="#79a953"/>
+            </svg>
+          </span>
+          <h3>Собери пазл знаний</h3>
+          <p class="mi-description">Читай слова, находи цифры и открывай картинку по кусочкам.</p>
+          <span class="mi-play">Играть <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="mi-card" href="games/find-the-word/index.html" aria-label="Играть: Найди слово">
+          <span class="mi-art" aria-hidden="true">
+            <svg viewBox="0 0 64 64" fill="none">
+              <rect x="7" y="11" width="41" height="34" rx="8" fill="#fff" stroke="#75431b" stroke-width="2.5"/>
+              <path d="M15 22h25m-25 9h19" stroke="#79a953" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="40" cy="40" r="11" fill="#f6c95d" stroke="#75431b" stroke-width="2.5"/>
+              <path d="m48 48 8 8" stroke="#75431b" stroke-width="5" stroke-linecap="round"/>
+              <circle cx="18" cy="38" r="2" fill="#ed7b58"/><circle cx="25" cy="38" r="2" fill="#ed7b58"/>
+            </svg>
+          </span>
+          <h3>Найди слово</h3>
+          <p class="mi-description">Внимательно посмотри на картинку и выбери нужное слово.</p>
+          <span class="mi-play">Играть <span aria-hidden="true">→</span></span>
+        </a>
+      </div>
+
+      <p class="mi-note">Маленький шаг, большая победа! ✨</p>
+    </div>
+  </section>
+
+  <script>
+    (() => {
+      const root = document.getElementById("mishkina-igroteka");
+      if (!root) return;
+
+      const cards = [...root.querySelectorAll(".mi-card")];
+      const count = root.querySelector("#mi-game-count");
+      const chooseButton = root.querySelector("#mi-choose");
+
+      if (count) count.textContent = String(cards.length);
+
+      if (chooseButton) {
+        chooseButton.addEventListener("click", (event) => {
+          const games = root.querySelector("#mi-games");
+          if (!games) return;
+          event.preventDefault();
+          games.scrollIntoView({
+            behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+            block: "start"
+          });
+        });
+      }
+    })();
+  </script>
 </body>
 </html>
