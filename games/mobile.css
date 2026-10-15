@@ -1,0 +1,448 @@
+@media (max-width: 768px), (orientation: landscape) and (max-height: 500px) {
+  html {
+    overflow-x: hidden;
+  }
+
+  body {
+    box-sizing: border-box;
+    width: 100%;
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 12px;
+    padding:
+      max(12px, env(safe-area-inset-top, 0px))
+      max(12px, env(safe-area-inset-right, 0px))
+      calc(12px + env(safe-area-inset-bottom, 0px))
+      max(12px, env(safe-area-inset-left, 0px));
+  }
+
+  body > nav {
+    order: 1000;
+    flex: 0 0 auto;
+    margin: 0 auto;
+  }
+
+  #mi-return-to-library {
+    position: static !important;
+    inset: auto;
+    z-index: 1;
+    box-sizing: border-box;
+    max-width: 100%;
+    min-height: 48px;
+    padding: 10px 16px;
+    font-size: 16px;
+  }
+
+  .game-wrapper,
+  .game-container {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 1200px;
+    min-width: 0;
+    height: auto;
+    max-height: none;
+    flex: 0 0 auto;
+    padding: clamp(12px, 4vw, 22px);
+    border-radius: clamp(18px, 6vw, 36px);
+  }
+
+  .game-wrapper {
+    --ball-size: clamp(52px, 20vw, 72px);
+  }
+
+  .game-wrapper h1,
+  .game-container h1,
+  .game-title {
+    max-width: 100%;
+    font-size: clamp(1.35rem, 6vw, 2rem);
+    overflow-wrap: anywhere;
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    justify-content: center;
+    gap: clamp(4px, 2vw, 10px);
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    padding: 10px 0;
+    flex-wrap: nowrap;
+  }
+
+  .board .ball,
+  .game-wrapper .board .ball {
+    width: 100%;
+    max-width: var(--ball-size, 72px);
+    height: auto;
+    aspect-ratio: 1;
+    min-width: 0;
+    justify-self: center;
+    font-size: clamp(1.45rem, 8vw, 2rem);
+  }
+
+  .game-container > .balls-area {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(4px, 2vw, 10px);
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    padding: 10px 0;
+    flex-wrap: nowrap;
+  }
+
+  .game-container > .balls-area .ball {
+    width: min(100%, var(--ball-size, 72px));
+    height: auto;
+    aspect-ratio: 1;
+    min-width: 0;
+    justify-self: center;
+    font-size: clamp(1.5rem, 8vw, 2rem);
+  }
+
+  .game-wrapper .balls-container {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    justify-items: center;
+    gap: clamp(4px, 2vw, 8px);
+  }
+
+  .game-wrapper .balls-container .ball,
+  .game-wrapper .balls-container .ball-drag-clone {
+    width: min(100%, var(--ball-size, 72px));
+    height: auto;
+    aspect-ratio: 1;
+    font-size: clamp(1.5rem, 8vw, 2rem);
+  }
+
+  #game-container {
+    width: 100%;
+    height: auto;
+    min-height: 60vh;
+    min-height: 60dvh;
+    max-height: none;
+    flex-direction: column;
+    overflow: visible;
+    border-width: 3px;
+  }
+
+  #game-screen {
+    box-sizing: border-box;
+    width: 100%;
+    height: auto;
+    min-height: 220px;
+    flex: 1 0 220px;
+  }
+
+  #controls {
+    box-sizing: border-box;
+    width: 100%;
+    flex: 0 0 auto;
+    padding: 12px;
+    border-top: 3px solid #4682b4;
+    border-left: 0;
+  }
+
+  .speed-btn-group,
+  #options-container {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .speed-btn,
+  .option-btn,
+  #retry-btn {
+    min-width: 0;
+    min-height: 48px;
+    padding: 8px;
+    font-size: clamp(1rem, 5vw, 1.4rem);
+    overflow-wrap: anywhere;
+  }
+
+  #message {
+    min-height: 0;
+    margin: 8px 0;
+    font-size: clamp(1rem, 5vw, 1.35rem);
+  }
+
+  #countdown {
+    font-size: clamp(7rem, 32vw, 12rem);
+  }
+
+  .math-panel {
+    box-sizing: border-box;
+    width: 100%;
+    flex: 0 0 auto;
+    padding: clamp(12px, 4vw, 20px);
+  }
+
+  .question-box {
+    margin-bottom: 12px;
+    padding: clamp(10px, 4vw, 16px);
+    font-size: clamp(2rem, 10vw, 2.5rem);
+  }
+
+  .answers-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .answer-btn {
+    min-width: 0;
+    min-height: 48px;
+    padding: 10px;
+    font-size: clamp(1.35rem, 7vw, 1.8rem);
+  }
+
+  .bowling-area {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 220px;
+    height: min(42vh, 320px);
+    height: min(42dvh, 320px);
+    flex: 0 0 auto;
+  }
+
+  .game-container:not(#gameContainer) {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    flex-direction: column;
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .game-container:not(#gameContainer) .bowling-area {
+    min-height: 220px;
+  }
+
+  .game-container .words-panel {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    flex: 0 0 auto;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(4px, 1.5vw, 10px);
+  }
+
+  .game-container .words-panel .word-card {
+    width: 100%;
+    height: auto;
+    min-width: 0;
+    min-height: 48px;
+    aspect-ratio: auto;
+    font-size: clamp(14px, 4.5vw, 19px);
+  }
+
+  .game-container .puzzle-panel {
+    width: 100%;
+    max-height: none;
+    flex: 0 0 auto;
+  }
+
+  .game-container .puzzle-wrapper {
+    width: min(100%, 450px);
+  }
+
+  #gameContainer {
+    padding: clamp(12px, 4vw, 22px);
+  }
+
+  #gameContainer .game-title {
+    font-size: clamp(1.5rem, 7vw, 2.2rem);
+    letter-spacing: 1px;
+  }
+
+  #gameContainer .buttons-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    width: 100%;
+    margin: 16px auto;
+  }
+
+  #gameContainer .level-btn,
+  #gameContainer .action-btn {
+    min-width: 0;
+    min-height: 48px;
+    padding: 8px;
+    font-size: clamp(1rem, 5vw, 1.35rem);
+    overflow-wrap: anywhere;
+  }
+
+  #gameContainer .picture-area {
+    padding: 8px;
+    margin-bottom: 12px;
+    border-radius: 24px;
+  }
+
+  #gameContainer .game-img {
+    max-width: 100%;
+    max-height: min(34vh, 200px);
+  }
+
+  #gameContainer .words-wrapper {
+    margin: 10px 0;
+    padding: 10px;
+  }
+
+  #gameContainer .word-list {
+    gap: 8px;
+    min-height: 60px;
+  }
+
+  #gameContainer .word {
+    max-width: 100%;
+    min-width: 0;
+    padding: 6px 10px;
+    font-size: clamp(0.95rem, 4.5vw, 1.2rem);
+    letter-spacing: 0;
+    overflow-wrap: anywhere;
+  }
+
+  #gameContainer .action-panel {
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  #gameContainer .hint-text {
+    max-width: 100%;
+    padding: 6px 10px;
+    font-size: clamp(0.9rem, 4vw, 1.1rem);
+    line-height: 1.35;
+  }
+
+  .grid-container {
+    min-width: 0;
+  }
+
+  .grid-row {
+    gap: clamp(4px, 2vw, 10px);
+    min-width: 0;
+    padding: 4px 0;
+  }
+
+  .word-card,
+  .drop-zone {
+    box-sizing: border-box;
+    width: clamp(78px, 29vw, 110px);
+    height: 48px;
+    min-width: 0;
+    flex: 0 1 auto;
+    padding: 4px;
+    font-size: clamp(14px, 4.5vw, 18px);
+    overflow-wrap: anywhere;
+  }
+
+  .image-wrapper {
+    min-width: 0;
+    flex: 0 1 auto;
+    gap: 4px;
+  }
+
+  .animal-image {
+    box-sizing: border-box;
+    width: clamp(40px, 15vw, 60px);
+    height: clamp(40px, 15vw, 60px);
+    flex: 0 0 auto;
+    font-size: clamp(24px, 8vw, 30px);
+  }
+
+  .game-field {
+    grid-template-columns: minmax(0, 1fr) minmax(0, clamp(120px, 42vw, 160px)) minmax(0, 1fr);
+    gap: clamp(4px, 2vw, 10px);
+    width: 100%;
+    min-width: 0;
+    padding: 8px 0;
+  }
+
+  .game-field .image-container {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+  }
+
+  .game-field .word-card {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    padding: 8px 4px;
+    font-size: clamp(14px, 4.5vw, 19px);
+    overflow-wrap: anywhere;
+  }
+
+  .progress-bar-container {
+    margin-bottom: 8px;
+  }
+
+  .game-field ~ * {
+    max-width: 100%;
+  }
+
+  .message-box,
+  .end-card,
+  .modal-content {
+    box-sizing: border-box;
+    width: min(100%, 440px);
+    max-width: 100%;
+    max-height: calc(100vh - 32px);
+    max-height: calc(100dvh - 32px);
+    overflow: auto;
+    padding: clamp(16px, 5vw, 32px);
+  }
+
+  .end-screen,
+  .success-message,
+  .modal,
+  .message-overlay,
+  .final-screen {
+    box-sizing: border-box;
+    overflow-y: auto;
+    padding:
+      max(12px, env(safe-area-inset-top, 0px))
+      max(12px, env(safe-area-inset-right, 0px))
+      max(12px, env(safe-area-inset-bottom, 0px))
+      max(12px, env(safe-area-inset-left, 0px));
+  }
+
+  .final-screen {
+    justify-content: flex-start;
+    gap: 12px;
+  }
+
+  .final-screen .trophy {
+    font-size: clamp(56px, 18vw, 90px);
+  }
+
+  .final-screen .final-text {
+    font-size: clamp(24px, 7vw, 36px);
+  }
+
+  .final-screen .final-sub {
+    font-size: clamp(16px, 5vw, 20px);
+  }
+
+  .restart-btn,
+  .btn-restart {
+    min-height: 48px;
+    padding: 10px 20px;
+    font-size: clamp(1.1rem, 5vw, 1.4rem);
+  }
+
+  #gameContainer .buttons-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 360px) {
+  #gameContainer .buttons-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
